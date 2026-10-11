@@ -90,13 +90,13 @@ Validación de estas reglas: `node tests/test_preparation_options.js` (Node.js) 
 Una cuenta de venta conserva el total completo, pero su preparación se separa en dos tickets relacionados por el mismo **número de comanda** y **mesa**.
 
 1. Abre caja y toma el pedido de una mesa con alimentos y bebidas.
-2. Pulsa **Guardar y enviar comanda**. Cocina recibe alimentos y Barra recibe bebidas, con cantidades e indicaciones. Un área sin productos no recibe un ticket vacío.
+2. Pulsa **Guardar y enviar comanda**. Cocina recibe sus platos y Barra recibe bebidas, postres y croissants, con cantidades e indicaciones. Un área sin productos no recibe un ticket vacío.
 3. En el dispositivo de Cocina abre `/cocina`; en el de Barra abre `/barra`. Inicia sesión con las credenciales del sistema. Las pantallas consultan nuevos pedidos cada 5 segundos mientras permanecen abiertas y conectadas.
 4. Cada área puede marcar su ticket como **En preparación** o **Lista**, de manera independiente. **Mostrar listas recientes** muestra hasta las últimas 50 comandas listas además de las pendientes.
 5. Pulsa **Ver / imprimir ticket** y después **Imprimir este ticket**. El navegador abre el diálogo de impresión: selecciona la impresora de esa área y ajusta papel/márgenes para tu equipo. Esto no realiza impresión automática ni envía trabajos directamente a una impresora remota. Los tickets solo contienen productos de su área; son comandas de preparación, no comprobantes fiscales ni de pago.
 6. Al cobrar un pedido enviado, se conserva el número de comanda y el estado de preparación. No se duplica el envío si los productos no cambiaron. Una venta directa de mostrador genera sus comandas al cobrar.
 
-Las categorías de bebidas de la carta se asignan automáticamente a Barra; alimentos, postres y extras a Cocina. En **Productos → Editar → Área de preparación** puedes cambiar el destino a Cocina o Barra por producto, por ejemplo si los postres se sirven en Barra.
+Las bebidas, waffles, pasteles, postres, croissants dulces y salados y crepas se asignan automáticamente a Barra. Los demás platos y extras van a Cocina. En **Productos → Editar → Área de preparación** puedes cambiar el destino a Cocina o Barra por producto, cuando un producto se prepare en una estación distinta.
 
 Si se modifica un pedido enviado, solo las áreas cuyo contenido cambió vuelven a **Pendiente**. Su ticket muestra **COMANDA MODIFICADA**, el contenido anterior y el actual para revisar lo agregado o retirado. No vuelvas a preparar automáticamente toda la lista. Una actualización que retire todos los productos de un área conserva un aviso explícito de retirada para ese equipo. Los tickets e indicaciones sobreviven a reinicios. Las comandas nuevas se generan al guardar/enviar o cobrar: esta actualización no reenvía ventas antiguas ni pedidos previos de forma automática; abre y guarda un pedido previo para enviarlo.
 

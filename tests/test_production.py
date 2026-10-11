@@ -89,6 +89,19 @@ class ProductionFlow(unittest.TestCase):
                 routed=call('/api/production?pedido='+str(pid))['tickets']
                 self.assertEqual(len(routed),1)
                 self.assertEqual(routed[0]['station'],'kitchen')
+                # Desserts and both sweet/savory croissants belong to the bar.
+                dessert_ids=[]
+                for category in ('Waffles','Pasteles','Postres','Croissants dulces','Croissants salados','Crepas dulces'):
+                    state=call('/api/products',{'name':category,'category':category,'price':'50','stock':0,'inventory_managed':0})
+                    dessert_ids.append(next(p['id'] for p in state['products'] if p['name']==category))
+                state=call('/api/sales',{'payment':'card','items':[{'id':pid,'quantity':1} for pid in [food]+dessert_ids]})
+                command=state['sales'][0]['production_order_id']
+                split=call('/api/production?pedido='+str(command))['tickets']
+                self.assertEqual(len(split),2)
+                bar_items=next(t['items'] for t in split if t['station']=='bar')
+                kitchen_items=next(t['items'] for t in split if t['station']=='kitchen')
+                self.assertEqual({p['id'] for p in bar_items},set(dessert_ids))
+                self.assertEqual([p['id'] for p in kitchen_items],[food])
                 self.assertEqual(call('/api/menu')['items'],[])
             finally:
                 proc.terminate();proc.wait(timeout=3)

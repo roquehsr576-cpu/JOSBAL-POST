@@ -1,7 +1,7 @@
 import json
 import uuid
 
-BAR_CATEGORIES = frozenset(('Bebidas calientes','Tizanas calientes','Tés','Refrescantes','Chamoyadas','Bebidas sobre las rocas','Sodas italianas','Frappés','Malteadas','Smoothies'))
+BAR_CATEGORIES = frozenset(('Bebidas calientes','Tizanas calientes','Tés','Refrescantes','Chamoyadas','Bebidas sobre las rocas','Sodas italianas','Frappés','Malteadas','Smoothies','Waffles','Pasteles','Postres','Croissants dulces','Croissants salados','Croissant','Croissants','Crepas dulces','Crepas'))
 
 def station_for(product):
     station = product['production_station']

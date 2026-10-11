@@ -1,5 +1,5 @@
 const station=location.pathname==='/barra'?'bar':'kitchen';
-const stationName=station==='bar'?'Barra de bebidas':'Cocina';
+const stationName=station==='bar'?'Barra · bebidas y postres':'Cocina';
 const orderFilter=new URLSearchParams(location.search).get('pedido');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const statusNames={pending:'Pendiente',preparing:'En preparación',ready:'Lista'};
