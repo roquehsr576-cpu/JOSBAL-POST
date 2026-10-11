@@ -67,3 +67,7 @@ En **Nueva venta**, selecciona un producto y marca “Sin cebolla”, “Sin pic
 4. Para atender otra mesa, guarda o cobra primero el pedido actual. Los cambios aún no guardados del carrito no se conservan al recargar. **Mostrador / para llevar** permite vender sin asignar mesa.
 
 Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas hasta cobrarlos. No reservan existencias: disponibilidad y precios se verifican de nuevo al cobrar. Si otro dispositivo modifica o cobra el mismo pedido, el sistema rechaza operaciones con la versión antigua; recarga la página y vuelve a abrir la mesa. Una mesa con pedido pendiente no se puede desactivar. Renombrar una mesa no cambia el nombre guardado en ventas anteriores. La configuración y los pedidos son privados; no aparecen en la carta pública.
+
+## Imágenes del menú
+
+Las 27 categorías de la carta incluyen imágenes ilustrativas generadas con estilo de fotografía natural. Se muestran en la carta pública y en la caja; cada producto utiliza la imagen representativa de su categoría, no una fotografía exacta de cada variante. El aviso de imágenes ilustrativas es visible en ambas vistas. Las imágenes se sirven desde el mismo servidor, sin enlaces externos. El archivo `static/images/menu-photos.png` contiene las imágenes en una cuadrícula uniforme y `static/food-images.js` asigna cada categoría a su imagen. Las categorías nuevas sin una ilustración asignada conservan el diseño de texto.

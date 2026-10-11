@@ -121,12 +121,12 @@ class Handler(BaseHTTPRequestHandler):
                 rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL ORDER BY menu_key')
                 self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
             return
-        public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf'}
+        public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
         if self.path in public:
             file = ROOT / 'static' / public[self.path]
             raw = file.read_bytes()
             self.send_response(200)
-            self.send_header('Content-Type', {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.pdf':'application/pdf'}[file.suffix])
+            self.send_header('Content-Type', {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.pdf':'application/pdf','.png':'image/png'}[file.suffix])
             self.send_header('Content-Length', str(len(raw)))
             self.end_headers()
             self.wfile.write(raw)
