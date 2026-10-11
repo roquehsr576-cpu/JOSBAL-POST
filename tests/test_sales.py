@@ -36,17 +36,23 @@ class SalesFlow(unittest.TestCase):
                 with urlopen(f'http://127.0.0.1:{port}/') as response:
                     self.assertIn('JOSBAL',response.read().decode())
                 p=request('/api/products',{'name':'Café','price':'25.50','stock':5})['products'][0]
-                sale={'payment':'cash','received':'100','items':[{'id':p['id'],'quantity':2}]}
+                sale={'payment':'cash','received':'100','items':[{'id':p['id'],'quantity':1,'notes':'Sin cebolla'},{'id':p['id'],'quantity':1,'notes':'Sin mayonesa, sin picante'}]}
                 with self.assertRaises(HTTPError) as error:
                     request('/api/sales',sale)
                 self.assertEqual(error.exception.code,400)
                 request('/api/open',{'opening':'200'})
+                with self.assertRaises(HTTPError) as error:
+                    request('/api/sales',{'payment':'card','items':[{'id':p['id'],'quantity':1,'notes':'x'*501}]})
+                self.assertEqual(error.exception.code,400)
+                self.assertEqual(request('/api/state')['products'][0]['stock'],5)
                 state=request('/api/sales',sale)
+                self.assertEqual([i['notes'] for i in state['sales'][0]['items']],['Sin cebolla','Sin mayonesa, sin picante'])
+                self.assertEqual([i['quantity'] for i in state['sales'][0]['items']],[1,1])
                 self.assertEqual(state['receipt'],{'id':1,'total':5100,'change':4900})
                 self.assertEqual(state['products'][0]['stock'],3)
                 self.assertEqual(state['shift']['expected'],25100)
                 with self.assertRaises(HTTPError):
-                    request('/api/sales',{'payment':'cash','received':'1000','items':[{'id':p['id'],'quantity':2},{'id':p['id'],'quantity':2}]})
+                    request('/api/sales',{'payment':'cash','received':'1000','items':[{'id':p['id'],'quantity':2,'notes':'Sin cebolla'},{'id':p['id'],'quantity':2,'notes':'Sin mostaza'}]})
                 self.assertEqual(request('/api/state')['products'][0]['stock'],3)
                 with self.assertRaises(HTTPError):
                     request('/api/sales',{**sale,'received':'1'})
@@ -68,6 +74,8 @@ class SalesFlow(unittest.TestCase):
                     except OSError:
                         time.sleep(.05)
                 self.assertEqual(len(state['sales']),2)
+                self.assertEqual(state['sales'][0]['items'][0]['notes'],'')
+                self.assertEqual([i['notes'] for i in state['sales'][1]['items']],['Sin cebolla','Sin mayonesa, sin picante'])
                 self.assertEqual(state['products'][0]['stock'],2)
             finally:
                 proc.terminate()

@@ -29,6 +29,8 @@ with connect() as db:
     for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT')]:
         if name not in columns:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
+    if 'notes' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
+        db.execute("ALTER TABLE items ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
     db.execute('CREATE UNIQUE INDEX IF NOT EXISTS products_menu_key ON products(menu_key)')
     if os.environ.get('JOSBAL_IMPORT_MENU', '1') == '1':
         menu = json.loads((ROOT / 'catalog' / 'menu.json').read_text())
@@ -56,6 +58,8 @@ def now():
 def snapshot(db):
     shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL ORDER BY id DESC LIMIT 1').fetchone()
     sales = [dict(r) for r in db.execute('SELECT * FROM sales ORDER BY id DESC LIMIT 30')]
+    for sale in sales:
+        sale['items'] = [dict(r) for r in db.execute('SELECT product_id,name,quantity,price,notes FROM items WHERE sale_id=? ORDER BY rowid', (sale['id'],))]
     result = dict(shift) if shift else None
     if result:
         result['cash_sales'] = db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash'", (shift['id'],)).fetchone()[0]
@@ -179,11 +183,16 @@ class Handler(BaseHTTPRequestHandler):
                     if payment not in ('cash','card'):
                         raise ValueError('Método de pago inválido.')
                     quantities = {}
+                    order_lines = []
                     for item in body['items']:
                         pid, qty = integer(item['id']), integer(item['quantity'])
                         if qty == 0:
                             raise ValueError('La cantidad debe ser mayor que cero.')
+                        notes = item.get('notes', '')
+                        if not isinstance(notes, str) or len(notes) > 500:
+                            raise ValueError('Las indicaciones deben ser texto de hasta 500 caracteres.')
                         quantities[pid] = quantities.get(pid, 0) + qty
+                        order_lines.append((pid, qty, notes.strip()))
                     if not quantities:
                         raise ValueError('Agrega productos a la venta.')
                     rows, total = [], 0
@@ -200,7 +209,10 @@ class Handler(BaseHTTPRequestHandler):
                     for p, qty in rows:
                         if p['inventory_managed']:
                             db.execute('UPDATE products SET stock=stock-? WHERE id=?',(qty,p['id']))
-                        db.execute('INSERT INTO items VALUES(?,?,?,?,?)',(sid,p['id'],p['name'],qty,p['price']))
+                    products_by_id = {p['id']:p for p, qty in rows}
+                    for pid, qty, notes in order_lines:
+                        p = products_by_id[pid]
+                        db.execute('INSERT INTO items(sale_id,product_id,name,quantity,price,notes) VALUES(?,?,?,?,?,?)',(sid,pid,p['name'],qty,p['price'],notes))
                     extra = {'receipt': {'id': sid, 'total':total, 'change':received-total}}
                 else:
                     self.reply(404, {'error':'No encontrado'})

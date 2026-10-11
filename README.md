@@ -54,3 +54,7 @@ El servicio usa un acceso compartido mediante autenticación HTTP del navegador.
 - Puedes editar precio, nombre, categoría y descripción desde Productos; esos cambios se reflejan en la carta pública de las entradas importadas. Los productos previos o creados manualmente no se publican automáticamente.
 - El menú público muestra únicamente nombres, precios, categorías y descripciones. La caja, inventario, historial y operaciones siguen protegidos por contraseña.
 - `JOSBAL_IMPORT_MENU=0` desactiva la incorporación automática para pruebas o instalaciones que no requieran esta carta. No elimina productos que ya se hayan importado.
+
+## Indicaciones de preparación
+
+En **Nueva venta**, selecciona un producto y marca “Sin cebolla”, “Sin picante”, “Sin mostaza” o “Sin mayonesa”, o escribe otras indicaciones. Pulsa **Agregar a la venta**. Para dos unidades con preparaciones distintas, selecciona el producto de nuevo y elige otras indicaciones: quedan en líneas separadas. El botón **+** incrementa la misma preparación; **Indicaciones** permite cambiarla para todas las unidades de esa línea. Las indicaciones no modifican el precio y deben confirmarse con cocina. Tras cobrar, se guardan junto con los productos en **Historial → Ver detalle**, incluso después de reiniciar. La consulta de estos detalles requiere autenticación. La carta pública sigue siendo una carta de consulta; los pedidos se registran desde la caja.
