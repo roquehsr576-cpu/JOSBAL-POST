@@ -58,3 +58,12 @@ El servicio usa un acceso compartido mediante autenticación HTTP del navegador.
 ## Indicaciones de preparación
 
 En **Nueva venta**, selecciona un producto y marca “Sin cebolla”, “Sin picante”, “Sin mostaza” o “Sin mayonesa”, o escribe otras indicaciones. Pulsa **Agregar a la venta**. Para dos unidades con preparaciones distintas, selecciona el producto de nuevo y elige otras indicaciones: quedan en líneas separadas. El botón **+** incrementa la misma preparación; **Indicaciones** permite cambiarla para todas las unidades de esa línea. Las indicaciones no modifican el precio y deben confirmarse con cocina. Tras cobrar, se guardan junto con los productos en **Historial → Ver detalle**, incluso después de reiniciar. La consulta de estos detalles requiere autenticación. La carta pública sigue siendo una carta de consulta; los pedidos se registran desde la caja.
+
+## Mesas y pedidos pendientes
+
+1. En **Mesas**, pulsa **Agregar mesa** y escribe un nombre como “Mesa 1” o “Terraza 2”. Puedes renombrarla o desactivarla desde **Configurar**. No hay mesas ficticias precargadas.
+2. Pulsa **Tomar pedido**, agrega los productos y sus indicaciones y pulsa **Guardar pedido de mesa**. Se guarda un pedido pendiente por mesa en SQLite, visible desde otros dispositivos al recargar la página.
+3. Desde **Mesas → Ver pedido**, continúa agregando productos o cobra. Al cobrar se libera el pedido pendiente, se descuenta inventario y se registra la mesa en **Historial → Ver detalle**.
+4. Para atender otra mesa, guarda o cobra primero el pedido actual. Los cambios aún no guardados del carrito no se conservan al recargar. **Mostrador / para llevar** permite vender sin asignar mesa.
+
+Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas hasta cobrarlos. No reservan existencias: disponibilidad y precios se verifican de nuevo al cobrar. Si otro dispositivo modifica o cobra el mismo pedido, el sistema rechaza operaciones con la versión antigua; recarga la página y vuelve a abrir la mesa. Una mesa con pedido pendiente no se puede desactivar. Renombrar una mesa no cambia el nombre guardado en ventas anteriores. La configuración y los pedidos son privados; no aparecen en la carta pública.

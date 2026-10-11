@@ -1,6 +1,7 @@
 import json
 import base64
 import hmac
+import uuid
 import os
 import sqlite3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -19,6 +20,8 @@ def connect():
 
 with connect() as db:
     db.executescript('''
+    CREATE TABLE IF NOT EXISTS dining_tables(id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, active INTEGER NOT NULL DEFAULT 1);
+    CREATE TABLE IF NOT EXISTS table_orders(table_id INTEGER PRIMARY KEY REFERENCES dining_tables(id), items TEXT NOT NULL, updated TEXT NOT NULL, revision TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY, name TEXT NOT NULL, price INTEGER NOT NULL CHECK(price>0), stock INTEGER NOT NULL CHECK(stock>=0));
     CREATE TABLE IF NOT EXISTS shifts(id INTEGER PRIMARY KEY, opened TEXT NOT NULL, opening INTEGER NOT NULL, closed TEXT, counted INTEGER);
     CREATE TABLE IF NOT EXISTS sales(id INTEGER PRIMARY KEY, shift_id INTEGER NOT NULL REFERENCES shifts(id), created TEXT NOT NULL, total INTEGER NOT NULL, payment TEXT NOT NULL, received INTEGER NOT NULL);
@@ -31,6 +34,11 @@ with connect() as db:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
     if 'notes' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
         db.execute("ALTER TABLE items ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
+    sales_columns = {r['name'] for r in db.execute('PRAGMA table_info(sales)')}
+    if 'table_id' not in sales_columns:
+        db.execute('ALTER TABLE sales ADD COLUMN table_id INTEGER REFERENCES dining_tables(id)')
+    if 'table_name' not in sales_columns:
+        db.execute("ALTER TABLE sales ADD COLUMN table_name TEXT NOT NULL DEFAULT ''")
     db.execute('CREATE UNIQUE INDEX IF NOT EXISTS products_menu_key ON products(menu_key)')
     if os.environ.get('JOSBAL_IMPORT_MENU', '1') == '1':
         menu = json.loads((ROOT / 'catalog' / 'menu.json').read_text())
@@ -65,7 +73,11 @@ def snapshot(db):
         result['cash_sales'] = db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash'", (shift['id'],)).fetchone()[0]
         result['total_sales'] = db.execute('SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=?', (shift['id'],)).fetchone()[0]
         result['expected'] = result['opening'] + result['cash_sales']
-    return {'products': [dict(r) for r in db.execute('SELECT * FROM products ORDER BY name')], 'shift': result, 'sales': sales}
+    tables = [dict(r) for r in db.execute('SELECT * FROM dining_tables ORDER BY id')]
+    orders = [dict(r) for r in db.execute('SELECT * FROM table_orders ORDER BY table_id')]
+    for order in orders:
+        order['items'] = json.loads(order['items'])
+    return {'tables': tables, 'orders': orders, 'products': [dict(r) for r in db.execute('SELECT * FROM products ORDER BY name')], 'shift': result, 'sales': sales}
 
 class Handler(BaseHTTPRequestHandler):
     def end_headers(self):
@@ -152,7 +164,23 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute('BEGIN IMMEDIATE')
                 shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL').fetchone()
                 extra = {}
-                if self.path == '/api/products':
+                if self.path == '/api/tables':
+                    name = body.get('name', '')
+                    if not isinstance(name, str) or not name.strip() or len(name.strip()) > 60:
+                        raise ValueError('Escribe un nombre de mesa de hasta 60 caracteres.')
+                    name = name.strip()
+                    tid = integer(body['id']) if body.get('id') else None
+                    active = 0 if str(body.get('active', '1')) == '0' else 1
+                    if tid and not active and db.execute('SELECT 1 FROM table_orders WHERE table_id=?',(tid,)).fetchone():
+                        raise ValueError('Cobra el pedido pendiente antes de desactivar la mesa.')
+                    if db.execute('SELECT 1 FROM dining_tables WHERE name=? COLLATE NOCASE AND id!=?',(name,tid or 0)).fetchone():
+                        raise ValueError('Ya existe una mesa con ese nombre.')
+                    if tid:
+                        if db.execute('UPDATE dining_tables SET name=?,active=? WHERE id=?',(name,active,tid)).rowcount != 1:
+                            raise ValueError('Mesa no encontrada.')
+                    else:
+                        db.execute('INSERT INTO dining_tables(name,active) VALUES(?,?)',(name,active))
+                elif self.path == '/api/products':
                     name = str(body['name']).strip()
                     price, stock = money(body['price']), integer(body['stock'])
                     if not name or len(name) > 120 or price <= 0:
@@ -176,11 +204,22 @@ class Handler(BaseHTTPRequestHandler):
                     expected = shift['opening'] + db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash'",(shift['id'],)).fetchone()[0]
                     db.execute('UPDATE shifts SET closed=?,counted=? WHERE id=?',(now(),counted,shift['id']))
                     extra = {'closing': {'expected': expected, 'counted': counted, 'difference': counted-expected}}
-                elif self.path == '/api/sales':
+                elif self.path in ('/api/sales', '/api/orders'):
                     if not shift:
                         raise ValueError('Abre la caja antes de cobrar.')
-                    payment = body['payment']
-                    if payment not in ('cash','card'):
+                    saving_order = self.path == '/api/orders'
+                    table_id = integer(body['table_id']) if body.get('table_id') else None
+                    table = db.execute('SELECT * FROM dining_tables WHERE id=? AND active=1',(table_id,)).fetchone() if table_id else None
+                    if table_id and not table:
+                        raise ValueError('Selecciona una mesa activa.')
+                    if saving_order and not table:
+                        raise ValueError('Selecciona la mesa para guardar el pedido.')
+                    pending = db.execute('SELECT * FROM table_orders WHERE table_id=?',(table_id,)).fetchone() if table else None
+                    revision = str(body.get('order_revision', '') or '')
+                    if (pending and pending['revision'] != revision) or (not pending and revision):
+                        raise ValueError('El pedido cambió desde otro dispositivo. Recarga la página y vuelve a abrir la mesa.')
+                    payment = body.get('payment', 'cash')
+                    if not saving_order and payment not in ('cash','card'):
                         raise ValueError('Método de pago inválido.')
                     quantities = {}
                     order_lines = []
@@ -202,10 +241,19 @@ class Handler(BaseHTTPRequestHandler):
                             raise ValueError('Stock insuficiente. Actualiza la venta.')
                         rows.append((p,qty))
                         total += p['price']*qty
+                    if saving_order:
+                        clean_items = [{'id':pid,'quantity':qty,'notes':notes} for pid,qty,notes in order_lines]
+                        db.execute('INSERT INTO table_orders(table_id,items,updated,revision) VALUES(?,?,?,?) ON CONFLICT(table_id) DO UPDATE SET items=excluded.items,updated=excluded.updated,revision=excluded.revision',(table_id,json.dumps(clean_items,ensure_ascii=False),now(),uuid.uuid4().hex))
+                        db.commit()
+                        self.reply(200, snapshot(db))
+                        return
                     received = money(body.get('received',0)) if payment == 'cash' else total
                     if received < total:
                         raise ValueError('El efectivo recibido es insuficiente.')
                     sid = db.execute('INSERT INTO sales(shift_id,created,total,payment,received) VALUES(?,?,?,?,?)',(shift['id'],now(),total,payment,received)).lastrowid
+                    db.execute('UPDATE sales SET table_id=?,table_name=? WHERE id=?',(table_id,table['name'] if table else '',sid))
+                    if pending:
+                        db.execute('DELETE FROM table_orders WHERE table_id=?',(table_id,))
                     for p, qty in rows:
                         if p['inventory_managed']:
                             db.execute('UPDATE products SET stock=stock-? WHERE id=?',(qty,p['id']))
