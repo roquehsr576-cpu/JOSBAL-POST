@@ -29,7 +29,7 @@ with connect() as db:
     ''')
     # Additive migration preserves existing products, inventory and sales.
     columns = {r['name'] for r in db.execute('PRAGMA table_info(products)')}
-    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT')]:
+    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'")]:
         if name not in columns:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
     if 'notes' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
@@ -137,7 +137,7 @@ class Handler(BaseHTTPRequestHandler):
             with connect() as db:
                 self.reply(200, snapshot(db))
             return
-        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css'}
+        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js'}
         if self.path not in files:
             self.reply(404, {'error': 'No encontrado'})
             return
@@ -188,11 +188,14 @@ class Handler(BaseHTTPRequestHandler):
                     category = str(body.get('category', '')).strip()[:80]
                     description = str(body.get('description', '')).strip()[:2000]
                     managed = 0 if str(body.get('inventory_managed', '1')) == '0' else 1
+                    profile = body.get('preparation_profile', 'auto')
+                    if profile not in ('auto','burger','frappe','tea','cold_drink','none'):
+                        raise ValueError('Selecciona un grupo de opciones de preparación válido.')
                     if body.get('id'):
-                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=? WHERE id=?', (name,price,stock,category,description,managed,integer(body['id']))).rowcount != 1:
+                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=? WHERE id=?', (name,price,stock,category,description,managed,profile,integer(body['id']))).rowcount != 1:
                             raise ValueError('Producto no encontrado.')
                     else:
-                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed) VALUES(?,?,?,?,?,?)',(name,price,stock,category,description,managed))
+                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile) VALUES(?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile))
                 elif self.path == '/api/open':
                     if shift:
                         raise ValueError('La caja ya está abierta.')

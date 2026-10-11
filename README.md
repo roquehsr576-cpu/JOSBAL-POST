@@ -57,7 +57,7 @@ El servicio usa un acceso compartido mediante autenticación HTTP del navegador.
 
 ## Indicaciones de preparación
 
-En **Nueva venta**, selecciona un producto y marca “Sin cebolla”, “Sin picante”, “Sin mostaza” o “Sin mayonesa”, o escribe otras indicaciones. Pulsa **Agregar a la venta**. Para dos unidades con preparaciones distintas, selecciona el producto de nuevo y elige otras indicaciones: quedan en líneas separadas. El botón **+** incrementa la misma preparación; **Indicaciones** permite cambiarla para todas las unidades de esa línea. Las indicaciones no modifican el precio y deben confirmarse con cocina. Tras cobrar, se guardan junto con los productos en **Historial → Ver detalle**, incluso después de reiniciar. La consulta de estos detalles requiere autenticación. La carta pública sigue siendo una carta de consulta; los pedidos se registran desde la caja.
+En **Nueva venta**, selecciona un producto y selecciona las opciones de preparación correspondientes a su categoría o escribe otras indicaciones. Pulsa **Agregar a la venta**. Para dos unidades con preparaciones distintas, selecciona el producto de nuevo y elige otras indicaciones: quedan en líneas separadas. El botón **+** incrementa la misma preparación; **Indicaciones** permite cambiarla para todas las unidades de esa línea. Las indicaciones no modifican el precio y deben confirmarse con cocina. Tras cobrar, se guardan junto con los productos en **Historial → Ver detalle**, incluso después de reiniciar. La consulta de estos detalles requiere autenticación. La carta pública sigue siendo una carta de consulta; los pedidos se registran desde la caja.
 
 ## Mesas y pedidos pendientes
 
@@ -71,3 +71,16 @@ Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas ha
 ## Imágenes del menú
 
 Las 27 categorías de la carta incluyen imágenes ilustrativas generadas con estilo de fotografía natural. Se muestran en la carta pública y en la caja; cada producto utiliza la imagen representativa de su categoría, no una fotografía exacta de cada variante. El aviso de imágenes ilustrativas es visible en ambas vistas. Las imágenes se sirven desde el mismo servidor, sin enlaces externos. El archivo `static/images/menu-photos.png` contiene las imágenes en una cuadrícula uniforme y `static/food-images.js` asigna cada categoría a su imagen. Las categorías nuevas sin una ilustración asignada conservan el diseño de texto.
+
+
+## Opciones de preparación según el producto
+
+- Hamburguesas, con o sin papas: sin cebolla, picante, mostaza, mayonesa o cátsup.
+- Frappés: sin azúcar añadida, crema batida o chocolate.
+- Tés, tizanas calientes y bebidas calientes: sin azúcar añadida.
+- Bebidas sobre las rocas: sin azúcar añadida o sin hielo.
+- Otras categorías: campo de indicaciones escritas, sin casillas de ingredientes de hamburguesa.
+
+En **Productos → Editar → Opciones de preparación** puedes elegir un grupo distinto para un producto o **Solo indicaciones escritas**. El valor predeterminado es **Automáticas según categoría**. Las indicaciones de pedidos previos se conservan aunque cambies el grupo; las que ya no tienen una casilla correspondiente aparecen en el campo de texto. “Sin azúcar añadida” no indica que la bebida esté libre de azúcar.
+
+Validación de estas reglas: `node tests/test_preparation_options.js` (Node.js) además de las pruebas Python de ventas, pedidos y persistencia.
