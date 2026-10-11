@@ -24,6 +24,16 @@ with connect() as db:
     CREATE TABLE IF NOT EXISTS sales(id INTEGER PRIMARY KEY, shift_id INTEGER NOT NULL REFERENCES shifts(id), created TEXT NOT NULL, total INTEGER NOT NULL, payment TEXT NOT NULL, received INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS items(sale_id INTEGER REFERENCES sales(id), product_id INTEGER REFERENCES products(id), name TEXT NOT NULL, quantity INTEGER NOT NULL, price INTEGER NOT NULL);
     ''')
+    # Additive migration preserves existing products, inventory and sales.
+    columns = {r['name'] for r in db.execute('PRAGMA table_info(products)')}
+    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT')]:
+        if name not in columns:
+            db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
+    db.execute('CREATE UNIQUE INDEX IF NOT EXISTS products_menu_key ON products(menu_key)')
+    if os.environ.get('JOSBAL_IMPORT_MENU', '1') == '1':
+        menu = json.loads((ROOT / 'catalog' / 'menu.json').read_text())
+        for item in menu['items']:
+            db.execute('INSERT OR IGNORE INTO products(name,price,stock,category,description,inventory_managed,menu_key) VALUES(?,?,0,?,?,0,?)', (item['name'],item['price'],item['category'],item['description'],item['key']))
 
 def money(value):
     from decimal import Decimal, InvalidOperation
@@ -90,6 +100,21 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
+        if self.path == '/api/menu':
+            with connect() as db:
+                rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL ORDER BY menu_key')
+                self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
+            return
+        public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf'}
+        if self.path in public:
+            file = ROOT / 'static' / public[self.path]
+            raw = file.read_bytes()
+            self.send_response(200)
+            self.send_header('Content-Type', {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.pdf':'application/pdf'}[file.suffix])
+            self.send_header('Content-Length', str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+            return
         if not self.authorized():
             return
         if self.path == '/api/state':
@@ -128,11 +153,14 @@ class Handler(BaseHTTPRequestHandler):
                     price, stock = money(body['price']), integer(body['stock'])
                     if not name or len(name) > 120 or price <= 0:
                         raise ValueError('Introduce un nombre y un precio mayor que cero.')
+                    category = str(body.get('category', '')).strip()[:80]
+                    description = str(body.get('description', '')).strip()[:2000]
+                    managed = 0 if str(body.get('inventory_managed', '1')) == '0' else 1
                     if body.get('id'):
-                        if db.execute('UPDATE products SET name=?,price=?,stock=? WHERE id=?', (name,price,stock,integer(body['id']))).rowcount != 1:
+                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=? WHERE id=?', (name,price,stock,category,description,managed,integer(body['id']))).rowcount != 1:
                             raise ValueError('Producto no encontrado.')
                     else:
-                        db.execute('INSERT INTO products(name,price,stock) VALUES(?,?,?)',(name,price,stock))
+                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed) VALUES(?,?,?,?,?,?)',(name,price,stock,category,description,managed))
                 elif self.path == '/api/open':
                     if shift:
                         raise ValueError('La caja ya está abierta.')
@@ -161,7 +189,7 @@ class Handler(BaseHTTPRequestHandler):
                     rows, total = [], 0
                     for pid, qty in quantities.items():
                         p = db.execute('SELECT * FROM products WHERE id=?',(pid,)).fetchone()
-                        if not p or p['stock'] < qty:
+                        if not p or (p['inventory_managed'] and p['stock'] < qty):
                             raise ValueError('Stock insuficiente. Actualiza la venta.')
                         rows.append((p,qty))
                         total += p['price']*qty
@@ -170,7 +198,8 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError('El efectivo recibido es insuficiente.')
                     sid = db.execute('INSERT INTO sales(shift_id,created,total,payment,received) VALUES(?,?,?,?,?)',(shift['id'],now(),total,payment,received)).lastrowid
                     for p, qty in rows:
-                        db.execute('UPDATE products SET stock=stock-? WHERE id=?',(qty,p['id']))
+                        if p['inventory_managed']:
+                            db.execute('UPDATE products SET stock=stock-? WHERE id=?',(qty,p['id']))
                         db.execute('INSERT INTO items VALUES(?,?,?,?,?)',(sid,p['id'],p['name'],qty,p['price']))
                     extra = {'receipt': {'id': sid, 'total':total, 'change':received-total}}
                 else:

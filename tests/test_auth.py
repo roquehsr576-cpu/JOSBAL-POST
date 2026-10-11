@@ -17,7 +17,7 @@ class Authentication(unittest.TestCase):
             with socket.socket() as sock:
                 sock.bind(('127.0.0.1',0))
                 port=sock.getsockname()[1]
-            env={**os.environ,'HOST':'127.0.0.1','PORT':str(port),'JOSBAL_DB':str(Path(tmp)/'db'),'JOSBAL_USER':'tester','JOSBAL_PASSWORD':'test-only-long-password'}
+            env={**os.environ,'HOST':'127.0.0.1','JOSBAL_IMPORT_MENU':'0','PORT':str(port),'JOSBAL_DB':str(Path(tmp)/'db'),'JOSBAL_USER':'tester','JOSBAL_PASSWORD':'test-only-long-password'}
             proc=subprocess.Popen([sys.executable,'app.py'],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             def call(path,auth=None,body=None,extra=None):
                 headers={'Content-Type':'application/json',**(extra or {})}

@@ -1,0 +1,1112 @@
+{
+  "source": "Menú JOSBAL CAFE suministrado por el propietario (PDF de 4 páginas)",
+  "currency": "MXN",
+  "items": [
+    {
+      "key": "pdf-v1-001",
+      "category": "Desayunos",
+      "name": "Chilaquiles",
+      "price": 11500,
+      "description": "Totopos bañados en salsa roja, verde o de frijol. Queso fresco, crema, cebolla y aguacate. Acompañado de huevos estrellados, tasajo o chorizo."
+    },
+    {
+      "key": "pdf-v1-002",
+      "category": "Desayunos",
+      "name": "Entomatadas",
+      "price": 11500,
+      "description": "Tortilla frita bañada en salsa roja. Queso fresco, crema, cebolla y aguacate. Acompañado de huevos estrellados, tasajo o chorizo."
+    },
+    {
+      "key": "pdf-v1-003",
+      "category": "Desayunos",
+      "name": "Enfrijoladas",
+      "price": 11500,
+      "description": "Tortilla frita bañada en salsa de frijol. Queso fresco, crema, cebolla y aguacate. Acompañado de huevos estrellados, tasajo o chorizo."
+    },
+    {
+      "key": "pdf-v1-004",
+      "category": "Huevos al gusto",
+      "name": "Omelette chila",
+      "price": 11500,
+      "description": "Omelette relleno de queso, coronado con chilaquiles al gusto, queso fresco, cebolla y crema. Acompañado de ensalada o frijol molido."
+    },
+    {
+      "key": "pdf-v1-005",
+      "category": "Huevos al gusto",
+      "name": "Huevos a la mexicana",
+      "price": 7500,
+      "description": "Huevos revueltos con tomate, cebolla y chiles; frijol molido y tortilla."
+    },
+    {
+      "key": "pdf-v1-006",
+      "category": "Huevos al gusto",
+      "name": "Huevos con jamón",
+      "price": 7500,
+      "description": "Huevos revueltos con jamón y cebolla; frijol molido y tortilla."
+    },
+    {
+      "key": "pdf-v1-007",
+      "category": "Huevos al gusto",
+      "name": "Omelette de jamón y queso",
+      "price": 7500,
+      "description": "Tortilla de huevo rellena de jamón, queso amarillo, quesillo y cebolla; frijol molido y tortilla."
+    },
+    {
+      "key": "pdf-v1-008",
+      "category": "Huevos al gusto",
+      "name": "Huevos con chorizo",
+      "price": 8500,
+      "description": "Huevos revueltos con chorizo; frijol molido y tortilla."
+    },
+    {
+      "key": "pdf-v1-009",
+      "category": "Baguettes",
+      "name": "Baguette clásico",
+      "price": 10000,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-010",
+      "category": "Baguettes",
+      "name": "Baguette de milanesa",
+      "price": 12500,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-011",
+      "category": "Baguettes",
+      "name": "Baguette de chorizo",
+      "price": 12500,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-012",
+      "category": "Baguettes",
+      "name": "Baguette de tasajo",
+      "price": 14500,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-013",
+      "category": "Bague-pizza",
+      "name": "Bague-pizza 3 quesos",
+      "price": 10000,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-014",
+      "category": "Bague-pizza",
+      "name": "Bague-pizza hawaiano",
+      "price": 10500,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-015",
+      "category": "Bague-pizza",
+      "name": "Bague-pizza de chorizo",
+      "price": 11000,
+      "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-016",
+      "category": "Croissants salados",
+      "name": "Croissant de jamón y queso",
+      "price": 10500,
+      "description": "Cuernito de mantequilla relleno de jamón. Mayonesa, aguacate, lechuga, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-017",
+      "category": "Croissants salados",
+      "name": "Croissant de milanesa",
+      "price": 11500,
+      "description": "Cuernito de mantequilla relleno de milanesa. Mayonesa, aguacate, lechuga, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+    },
+    {
+      "key": "pdf-v1-018",
+      "category": "Algo sano",
+      "name": "Ensalada de atún",
+      "price": 10000,
+      "description": "Atún preparado, lechuga, pepino, zanahoria y aguacate; chiles en vinagre y totopos."
+    },
+    {
+      "key": "pdf-v1-019",
+      "category": "Para acompañar",
+      "name": "Papas a la francesa",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-020",
+      "category": "Para acompañar",
+      "name": "Papas gajo",
+      "price": 8000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-021",
+      "category": "Para acompañar",
+      "name": "Salchipapas",
+      "price": 8500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-022",
+      "category": "Alitas",
+      "name": "Alitas · 6 piezas",
+      "price": 12000,
+      "description": "Salsa a elegir: Ret Hot, BBQ o mango habanero."
+    },
+    {
+      "key": "pdf-v1-023",
+      "category": "Alitas",
+      "name": "Alitas · 10 piezas",
+      "price": 18000,
+      "description": "Salsa a elegir: Ret Hot, BBQ o mango habanero."
+    },
+    {
+      "key": "pdf-v1-024",
+      "category": "Hamburguesas",
+      "name": "Hamburguesa clásica",
+      "price": 8000,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-025",
+      "category": "Hamburguesas",
+      "name": "Hamburguesa hawaiana",
+      "price": 10000,
+      "description": "Con piña. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-026",
+      "category": "Hamburguesas",
+      "name": "Hamburguesa de quesillo",
+      "price": 10000,
+      "description": "Doble porción de quesillo. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-027",
+      "category": "Hamburguesas",
+      "name": "Salchiburger",
+      "price": 10000,
+      "description": "Con salchicha. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-028",
+      "category": "Hamburguesas",
+      "name": "Hamburguesa 3 quesos",
+      "price": 10500,
+      "description": "Combinación de tres quesos, carne de res, jamón, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-029",
+      "category": "Hamburguesas",
+      "name": "Hamburguesa doble carne",
+      "price": 11000,
+      "description": "Doble porción de carne de res. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-030",
+      "category": "Hamburguesas con papas",
+      "name": "Hamburguesa clásica con papas",
+      "price": 11000,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada de papas a la francesa. Por $5 más, cambia a papas gajo."
+    },
+    {
+      "key": "pdf-v1-031",
+      "category": "Hamburguesas con papas",
+      "name": "Hamburguesa hawaiana con papas",
+      "price": 13000,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada de papas a la francesa. Por $5 más, cambia a papas gajo."
+    },
+    {
+      "key": "pdf-v1-032",
+      "category": "Hamburguesas con papas",
+      "name": "Hamburguesa de quesillo con papas",
+      "price": 13000,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada de papas a la francesa. Por $5 más, cambia a papas gajo."
+    },
+    {
+      "key": "pdf-v1-033",
+      "category": "Hamburguesas con papas",
+      "name": "Hamburguesa con salchicha con papas",
+      "price": 13000,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada de papas a la francesa. Por $5 más, cambia a papas gajo."
+    },
+    {
+      "key": "pdf-v1-034",
+      "category": "Hamburguesas con papas",
+      "name": "Hamburguesa 3 quesos con papas",
+      "price": 13500,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada de papas a la francesa. Por $5 más, cambia a papas gajo."
+    },
+    {
+      "key": "pdf-v1-035",
+      "category": "Hamburguesas con papas",
+      "name": "Hamburguesa doble carne con papas",
+      "price": 14000,
+      "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada de papas a la francesa. Por $5 más, cambia a papas gajo."
+    },
+    {
+      "key": "pdf-v1-036",
+      "category": "Extras",
+      "name": "Cambio a papas gajo",
+      "price": 500,
+      "description": "Solo para hamburguesas con papas; agrega este extra al cobrar el cambio."
+    },
+    {
+      "key": "pdf-v1-037",
+      "category": "Hot dogs",
+      "name": "Hot dog clásico",
+      "price": 4000,
+      "description": "Salchicha de pavo, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-038",
+      "category": "Hot dogs",
+      "name": "Hot dog de quesillo",
+      "price": 5000,
+      "description": "Salchicha de pavo envuelta en quesillo, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-039",
+      "category": "Hot dogs",
+      "name": "Hot dog hawaiano",
+      "price": 6000,
+      "description": "Salchicha de pavo, jamón, queso amarillo, piña, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+    },
+    {
+      "key": "pdf-v1-040",
+      "category": "Combos",
+      "name": "Combo amigos",
+      "price": 27000,
+      "description": "2 hamburguesas clásicas + 1 orden de papas a la francesa + 2 jugos o 2 refrescos de lata."
+    },
+    {
+      "key": "pdf-v1-041",
+      "category": "Combos",
+      "name": "Combo hamburguesas",
+      "price": 15500,
+      "description": "2 hamburguesas clásicas."
+    },
+    {
+      "key": "pdf-v1-042",
+      "category": "Combos",
+      "name": "Combo hot dog",
+      "price": 10000,
+      "description": "3 hot dogs clásicos."
+    },
+    {
+      "key": "pdf-v1-043",
+      "category": "Bebidas calientes",
+      "name": "Espresso",
+      "price": 2000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-044",
+      "category": "Bebidas calientes",
+      "name": "Affogato",
+      "price": 3000,
+      "description": "Helado de vainilla con espresso."
+    },
+    {
+      "key": "pdf-v1-045",
+      "category": "Bebidas calientes",
+      "name": "Americano · Chico",
+      "price": 3000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-046",
+      "category": "Bebidas calientes",
+      "name": "Americano · Grande",
+      "price": 4000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-047",
+      "category": "Bebidas calientes",
+      "name": "Capuchino · Chico",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-048",
+      "category": "Bebidas calientes",
+      "name": "Capuchino · Grande",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-049",
+      "category": "Bebidas calientes",
+      "name": "Latte · Chico",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-050",
+      "category": "Bebidas calientes",
+      "name": "Latte · Grande",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-051",
+      "category": "Bebidas calientes",
+      "name": "Moka · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-052",
+      "category": "Bebidas calientes",
+      "name": "Moka · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-053",
+      "category": "Bebidas calientes",
+      "name": "Moka blanco · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-054",
+      "category": "Bebidas calientes",
+      "name": "Moka blanco · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-055",
+      "category": "Bebidas calientes",
+      "name": "Latte caramel · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-056",
+      "category": "Bebidas calientes",
+      "name": "Latte caramel · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-057",
+      "category": "Bebidas calientes",
+      "name": "Taro caliente · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-058",
+      "category": "Bebidas calientes",
+      "name": "Taro caliente · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-059",
+      "category": "Bebidas calientes",
+      "name": "Matcha caliente · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-060",
+      "category": "Bebidas calientes",
+      "name": "Matcha caliente · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-061",
+      "category": "Bebidas calientes",
+      "name": "Horchata caliente · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-062",
+      "category": "Bebidas calientes",
+      "name": "Horchata caliente · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-063",
+      "category": "Bebidas calientes",
+      "name": "Chocolate de agua · Chico",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-064",
+      "category": "Bebidas calientes",
+      "name": "Chocolate de agua · Grande",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-065",
+      "category": "Bebidas calientes",
+      "name": "Chocolate de leche · Chico",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-066",
+      "category": "Bebidas calientes",
+      "name": "Chocolate de leche · Grande",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-067",
+      "category": "Tizanas calientes",
+      "name": "Tizana Frutos reales · Chico",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-068",
+      "category": "Tizanas calientes",
+      "name": "Tizana Frutos reales · Grande",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-069",
+      "category": "Tizanas calientes",
+      "name": "Tizana Berri delicious · Chico",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-070",
+      "category": "Tizanas calientes",
+      "name": "Tizana Berri delicious · Grande",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-071",
+      "category": "Tizanas calientes",
+      "name": "Tizana Frutos rojos · Chico",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-072",
+      "category": "Tizanas calientes",
+      "name": "Tizana Frutos rojos · Grande",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-073",
+      "category": "Tés",
+      "name": "Té de Manzanilla · Chico",
+      "price": 2500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-074",
+      "category": "Tés",
+      "name": "Té de Manzanilla · Grande",
+      "price": 3000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-075",
+      "category": "Tés",
+      "name": "Té de Limón · Chico",
+      "price": 2500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-076",
+      "category": "Tés",
+      "name": "Té de Limón · Grande",
+      "price": 3000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-077",
+      "category": "Tés",
+      "name": "Té de Hierbabuena · Chico",
+      "price": 2500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-078",
+      "category": "Tés",
+      "name": "Té de Hierbabuena · Grande",
+      "price": 3000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-079",
+      "category": "Tés",
+      "name": "Té de Canela a la manzana · Chico",
+      "price": 2500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-080",
+      "category": "Tés",
+      "name": "Té de Canela a la manzana · Grande",
+      "price": 3000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-081",
+      "category": "Refrescantes",
+      "name": "Limonada de sandía",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-082",
+      "category": "Refrescantes",
+      "name": "Limonada",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-083",
+      "category": "Refrescantes",
+      "name": "Naranjada",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-084",
+      "category": "Refrescantes",
+      "name": "Chocomilk",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-085",
+      "category": "Refrescantes",
+      "name": "Refrescos",
+      "price": 3000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-086",
+      "category": "Chamoyadas",
+      "name": "Chamoyada de mora azul",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-087",
+      "category": "Chamoyadas",
+      "name": "Chamoyada de manzana verde",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-088",
+      "category": "Chamoyadas",
+      "name": "Chamoyada de sandía",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-089",
+      "category": "Bebidas sobre las rocas",
+      "name": "Americano sobre rocas · Chico",
+      "price": 4000,
+      "description": "No lleva dulce."
+    },
+    {
+      "key": "pdf-v1-090",
+      "category": "Bebidas sobre las rocas",
+      "name": "Americano sobre rocas · Grande",
+      "price": 4500,
+      "description": "No lleva dulce."
+    },
+    {
+      "key": "pdf-v1-091",
+      "category": "Bebidas sobre las rocas",
+      "name": "Latte sobre rocas · Chico",
+      "price": 5500,
+      "description": "No lleva dulce."
+    },
+    {
+      "key": "pdf-v1-092",
+      "category": "Bebidas sobre las rocas",
+      "name": "Latte sobre rocas · Grande",
+      "price": 6000,
+      "description": "No lleva dulce."
+    },
+    {
+      "key": "pdf-v1-093",
+      "category": "Bebidas sobre las rocas",
+      "name": "Moka sobre rocas · Chico",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-094",
+      "category": "Bebidas sobre las rocas",
+      "name": "Moka sobre rocas · Grande",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-095",
+      "category": "Bebidas sobre las rocas",
+      "name": "Blanco sobre rocas · Chico",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-096",
+      "category": "Bebidas sobre las rocas",
+      "name": "Blanco sobre rocas · Grande",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-097",
+      "category": "Bebidas sobre las rocas",
+      "name": "Caramelo sobre rocas · Chico",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-098",
+      "category": "Bebidas sobre las rocas",
+      "name": "Caramelo sobre rocas · Grande",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-099",
+      "category": "Bebidas sobre las rocas",
+      "name": "Taro sobre rocas · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-100",
+      "category": "Bebidas sobre las rocas",
+      "name": "Taro sobre rocas · Grande",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-101",
+      "category": "Bebidas sobre las rocas",
+      "name": "Matcha sobre rocas · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-102",
+      "category": "Bebidas sobre las rocas",
+      "name": "Matcha sobre rocas · Grande",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-103",
+      "category": "Bebidas sobre las rocas",
+      "name": "Horchata sobre rocas · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-104",
+      "category": "Bebidas sobre las rocas",
+      "name": "Horchata sobre rocas · Grande",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-105",
+      "category": "Bebidas sobre las rocas",
+      "name": "Tizana sobre rocas · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-106",
+      "category": "Bebidas sobre las rocas",
+      "name": "Tizana sobre rocas · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-107",
+      "category": "Bebidas sobre las rocas",
+      "name": "Té sobre rocas · Chico",
+      "price": 4000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-108",
+      "category": "Bebidas sobre las rocas",
+      "name": "Té sobre rocas · Grande",
+      "price": 4500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-109",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Manzana verde · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-110",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Manzana verde · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-111",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Mora azul · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-112",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Mora azul · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-113",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Sandía · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-114",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Sandía · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-115",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Piña · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-116",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Piña · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-117",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Maracuyá · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-118",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Maracuyá · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-119",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Frutos rojos · Chico",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-120",
+      "category": "Sodas italianas",
+      "name": "Soda italiana · Frutos rojos · Grande",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-121",
+      "category": "Frappés",
+      "name": "Frappé café",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-122",
+      "category": "Frappés",
+      "name": "Frappé moka",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-123",
+      "category": "Frappés",
+      "name": "Frappé frapuchino Oreo",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-124",
+      "category": "Frappés",
+      "name": "Frappé Oreo",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-125",
+      "category": "Frappés",
+      "name": "Frappé mazapán",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-126",
+      "category": "Frappés",
+      "name": "Frappé fresas con crema",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-127",
+      "category": "Frappés",
+      "name": "Frappé taro",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-128",
+      "category": "Frappés",
+      "name": "Frappé matcha",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-129",
+      "category": "Frappés",
+      "name": "Frappé horchata",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-130",
+      "category": "Frappés",
+      "name": "Frappé pay de limón",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-131",
+      "category": "Frappés",
+      "name": "Frappé Ferrero",
+      "price": 8500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-132",
+      "category": "Malteadas",
+      "name": "Malteada de vainilla",
+      "price": 7500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-133",
+      "category": "Malteadas",
+      "name": "Malteada de fresa",
+      "price": 8000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-134",
+      "category": "Malteadas",
+      "name": "Malteada de Oreo",
+      "price": 8000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-135",
+      "category": "Smoothies",
+      "name": "Smoothie de frutos rojos",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-136",
+      "category": "Smoothies",
+      "name": "Smoothie de mango",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-137",
+      "category": "Smoothies",
+      "name": "Smoothie de piña",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-138",
+      "category": "Pasteles",
+      "name": "Carlota",
+      "price": 3500,
+      "description": "Pregunta por nuestros postres del día."
+    },
+    {
+      "key": "pdf-v1-139",
+      "category": "Pasteles",
+      "name": "Cheesecake de zarzamora",
+      "price": 5500,
+      "description": "Pregunta por nuestros postres del día."
+    },
+    {
+      "key": "pdf-v1-140",
+      "category": "Pasteles",
+      "name": "Chocoflán",
+      "price": 4500,
+      "description": "Pregunta por nuestros postres del día."
+    },
+    {
+      "key": "pdf-v1-141",
+      "category": "Pasteles",
+      "name": "Pastel capuchino",
+      "price": 6500,
+      "description": "Pregunta por nuestros postres del día."
+    },
+    {
+      "key": "pdf-v1-142",
+      "category": "Croissants dulces",
+      "name": "Croissant de Nutella",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-143",
+      "category": "Croissants dulces",
+      "name": "Croissant de Philadelphia y mermelada",
+      "price": 5500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-144",
+      "category": "Croissants dulces",
+      "name": "Croissant de Philadelphia y Nutella",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-145",
+      "category": "Croissants dulces",
+      "name": "Croissant de Nutella y plátano",
+      "price": 6000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-146",
+      "category": "Croissants dulces",
+      "name": "Croissant de Nutella y fresa",
+      "price": 6500,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-147",
+      "category": "Croissants dulces",
+      "name": "Croissant de Nutella, Philadelphia, plátano y fresa",
+      "price": 7000,
+      "description": ""
+    },
+    {
+      "key": "pdf-v1-148",
+      "category": "Crepas dulces",
+      "name": "Crepa clásica",
+      "price": 4500,
+      "description": "Un ingrediente a elegir. Decorada con chocolate, crema batida y cheesecake."
+    },
+    {
+      "key": "pdf-v1-149",
+      "category": "Crepas dulces",
+      "name": "Crepa Josbal",
+      "price": 7500,
+      "description": "Nutella, Philadelphia y plátano. Decorada con chocolate, crema batida y cheesecake."
+    },
+    {
+      "key": "pdf-v1-150",
+      "category": "Crepas dulces",
+      "name": "Crepa imperial",
+      "price": 8500,
+      "description": "Nutella, Philadelphia y fresa. Decorada con chocolate, crema batida y cheesecake."
+    },
+    {
+      "key": "pdf-v1-151",
+      "category": "Crepas dulces",
+      "name": "Crepa Oreo",
+      "price": 8500,
+      "description": "Nutella, Philadelphia y Oreo. Decorada con chocolate, crema batida y cheesecake."
+    },
+    {
+      "key": "pdf-v1-152",
+      "category": "Crepas dulces",
+      "name": "Crepa dulce placer",
+      "price": 10000,
+      "description": "Fresa, lechera y helado. Decorada con chocolate, crema batida y cheesecake."
+    },
+    {
+      "key": "pdf-v1-153",
+      "category": "Crepas dulces",
+      "name": "Crepa especial",
+      "price": 7500,
+      "description": "Arma tu crepa con tres sabores diferentes. Decorada con chocolate, crema batida y cheesecake."
+    },
+    {
+      "key": "pdf-v1-154",
+      "category": "Waffles",
+      "name": "Waffle tradicional",
+      "price": 7000,
+      "description": "Plátano acompañado de lechera o maple."
+    },
+    {
+      "key": "pdf-v1-155",
+      "category": "Waffles",
+      "name": "Waffle de fresa",
+      "price": 8000,
+      "description": "Fresa acompañada de lechera o maple."
+    },
+    {
+      "key": "pdf-v1-156",
+      "category": "Waffles",
+      "name": "Waffle Josbal",
+      "price": 9500,
+      "description": "Nutella, Philadelphia y plátano."
+    },
+    {
+      "key": "pdf-v1-157",
+      "category": "Waffles",
+      "name": "Waffle imperial",
+      "price": 10000,
+      "description": "Nutella, Philadelphia y fresa."
+    },
+    {
+      "key": "pdf-v1-158",
+      "category": "Waffles",
+      "name": "Waffle Oreo",
+      "price": 11500,
+      "description": "Nutella, Philadelphia y Oreo."
+    }
+  ]
+}

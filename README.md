@@ -44,3 +44,13 @@ El archivo `render.yaml` prepara un servicio de pago con disco persistente. Cons
 6. Agrega un producto, abre caja, realiza una venta de prueba y revisa el cierre. Reinicia el servicio y comprueba que los registros persisten antes de introducir operaciones reales.
 
 El servicio usa un acceso compartido mediante autenticación HTTP del navegador. No incluye cuentas individuales, roles ni cierre de sesión propio; cierra el navegador y evita dispositivos compartidos. Toda la página y la API requieren credenciales cuando hay acceso de red. Para uso local sin credenciales conserva HOST=127.0.0.1. Mantén un único servicio y disco; no escales a varias instancias con esta base SQLite. El disco conserva datos entre reinicios; no sustituye una estrategia de respaldos. La base local no se transfiere automáticamente al alojamiento.
+
+## Menú digital Josbal Café
+
+- Carta para clientes, sin contraseña: `/menu`. Incluye búsqueda, categorías y descarga de la carta PDF original.
+- El PDF proporcionado por el propietario se transcribió en `catalog/menu.json`: 158 entradas cobrables en 27 categorías, contando tamaños chico/grande y el extra de $5 para cambiar a papas gajo.
+- En el primer inicio tras esta actualización se agregan automáticamente al catálogo y a la base persistente. Reiniciar no duplica productos ni restablece precios editados; no se sobrescriben productos previos ni ventas.
+- Las entradas de carta se crean como **Preparado al pedido (sin conteo)** porque el documento no indica cantidades. En Productos puedes activar **Controlar existencias** y registrar el stock real.
+- Puedes editar precio, nombre, categoría y descripción desde Productos; esos cambios se reflejan en la carta pública de las entradas importadas. Los productos previos o creados manualmente no se publican automáticamente.
+- El menú público muestra únicamente nombres, precios, categorías y descripciones. La caja, inventario, historial y operaciones siguen protegidos por contraseña.
+- `JOSBAL_IMPORT_MENU=0` desactiva la incorporación automática para pruebas o instalaciones que no requieran esta carta. No elimina productos que ya se hayan importado.

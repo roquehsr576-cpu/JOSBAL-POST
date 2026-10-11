@@ -17,7 +17,7 @@ class SalesFlow(unittest.TestCase):
                 s.bind(('127.0.0.1',0))
                 port=s.getsockname()[1]
             env={k:v for k,v in os.environ.items() if k not in ('HOST','JOSBAL_USER','JOSBAL_PASSWORD')}
-            env.update({'PORT':str(port),'JOSBAL_DB':str(Path(tmp)/'test.db')})
+            env.update({'JOSBAL_IMPORT_MENU':'0','PORT':str(port),'JOSBAL_DB':str(Path(tmp)/'test.db')})
             proc=subprocess.Popen([sys.executable,'app.py'],cwd=Path(__file__).resolve().parents[1],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             def request(path,body=None):
                 req=Request(f'http://127.0.0.1:{port}'+path,data=json.dumps(body).encode() if body is not None else None,headers={'Content-Type':'application/json'})
