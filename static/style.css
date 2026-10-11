@@ -4,3 +4,4 @@
 .preparation-options{border:1px solid #dce3e9;border-radius:10px;padding:12px 16px}.preparation-options legend{font-size:12px;color:#607781}.preparation-options label{display:flex;align-items:center;gap:10px;font-size:14px}.preparation-options input{width:auto;margin:0;accent-color:#138569}.order-notes{color:#138569;font-size:13px;line-height:1.5;white-space:pre-wrap;margin:10px 0}.quantity{flex-wrap:wrap}
 .table-card h2{margin-bottom:10px}.table-card .actions{flex-wrap:wrap;justify-content:flex-start}.table-card .primary{padding:10px 12px}#save-order{width:100%;margin-top:20px;color:#138569;border-color:#138569}
 .product .food-photo{margin-bottom:15px}.product{overflow:hidden}.product .price{margin-top:8px}
+.station-link{color:#b5c8cc;text-decoration:none;text-align:left;padding:14px;font-weight:600;font-size:14px;border-radius:8px}.station-link:hover{background:#22444b;color:#6de0be}@media(max-width:700px){.station-link{padding:10px;font-size:12px}}

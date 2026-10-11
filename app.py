@@ -6,7 +6,9 @@ import os
 import sqlite3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
+from urllib.parse import urlsplit, parse_qs
 from datetime import datetime, timezone
+from production import send_tickets, tickets
 
 ROOT = Path(__file__).parent
 DB = Path(os.environ.get('JOSBAL_DB', ROOT / 'data' / 'josbal.sqlite3'))
@@ -20,6 +22,8 @@ def connect():
 
 with connect() as db:
     db.executescript('''
+    CREATE TABLE IF NOT EXISTS production_orders(id INTEGER PRIMARY KEY AUTOINCREMENT,table_name TEXT NOT NULL,created TEXT NOT NULL,sale_id INTEGER REFERENCES sales(id));
+    CREATE TABLE IF NOT EXISTS production_tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL REFERENCES production_orders(id),station TEXT NOT NULL,items TEXT NOT NULL,changes TEXT NOT NULL DEFAULT '{}',status TEXT NOT NULL DEFAULT 'pending',updated TEXT NOT NULL,revision TEXT NOT NULL,UNIQUE(order_id,station));
     CREATE TABLE IF NOT EXISTS dining_tables(id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, active INTEGER NOT NULL DEFAULT 1);
     CREATE TABLE IF NOT EXISTS table_orders(table_id INTEGER PRIMARY KEY REFERENCES dining_tables(id), items TEXT NOT NULL, updated TEXT NOT NULL, revision TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY, name TEXT NOT NULL, price INTEGER NOT NULL CHECK(price>0), stock INTEGER NOT NULL CHECK(stock>=0));
@@ -29,7 +33,7 @@ with connect() as db:
     ''')
     # Additive migration preserves existing products, inventory and sales.
     columns = {r['name'] for r in db.execute('PRAGMA table_info(products)')}
-    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'")]:
+    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'"), ('production_station', "TEXT NOT NULL DEFAULT 'auto'")]:
         if name not in columns:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
     if 'notes' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
@@ -39,6 +43,9 @@ with connect() as db:
         db.execute('ALTER TABLE sales ADD COLUMN table_id INTEGER REFERENCES dining_tables(id)')
     if 'table_name' not in sales_columns:
         db.execute("ALTER TABLE sales ADD COLUMN table_name TEXT NOT NULL DEFAULT ''")
+    for table_name in ('sales','table_orders'):
+        if 'production_order_id' not in {r['name'] for r in db.execute(f'PRAGMA table_info({table_name})')}:
+            db.execute(f'ALTER TABLE {table_name} ADD COLUMN production_order_id INTEGER REFERENCES production_orders(id)')
     db.execute('CREATE UNIQUE INDEX IF NOT EXISTS products_menu_key ON products(menu_key)')
     if os.environ.get('JOSBAL_IMPORT_MENU', '1') == '1':
         menu = json.loads((ROOT / 'catalog' / 'menu.json').read_text())
@@ -133,15 +140,35 @@ class Handler(BaseHTTPRequestHandler):
             return
         if not self.authorized():
             return
+        if urlsplit(self.path).path == '/api/production':
+            try:
+                order_filter = parse_qs(urlsplit(self.path).query).get('pedido',[None])[0]
+                order_id = integer(order_filter) if order_filter is not None else None
+                with connect() as db:
+                    self.reply(200, {'tickets': tickets(db,order_id)})
+            except ValueError:
+                self.reply(400, {'error':'Número de comanda inválido.'})
+            return
+        if self.path.startswith('/api/tickets/'):
+            try:
+                ticket_id = integer(self.path.rsplit('/',1)[1])
+                with connect() as db:
+                    row = db.execute('SELECT order_id FROM production_tickets WHERE id=?',(ticket_id,)).fetchone()
+                    ticket = next((t for t in tickets(db,row['order_id']) if t['id']==ticket_id),None) if row else None
+                    self.reply(200 if ticket else 404,ticket or {'error':'Comanda no encontrada.'})
+            except ValueError:
+                self.reply(400,{'error':'Comanda inválida.'})
+            return
         if self.path == '/api/state':
             with connect() as db:
                 self.reply(200, snapshot(db))
             return
-        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js'}
-        if self.path not in files:
+        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js', '/cocina':'production.html', '/barra':'production.html', '/production.js':'production.js', '/production.css':'production.css', '/ticket':'ticket.html', '/ticket.js':'ticket.js'}
+        page = self.path.split('?',1)[0]
+        if page not in files:
             self.reply(404, {'error': 'No encontrado'})
             return
-        file = ROOT / 'static' / files[self.path]
+        file = ROOT / 'static' / files[page]
         raw = file.read_bytes()
         self.send_response(200)
         self.send_header('Content-Type', {'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css; charset=utf-8'}[file.suffix[1:]])
@@ -164,7 +191,17 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute('BEGIN IMMEDIATE')
                 shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL').fetchone()
                 extra = {}
-                if self.path == '/api/tables':
+                if self.path == '/api/production/status':
+                    status = body.get('status')
+                    if status not in ('pending','preparing','ready'):
+                        raise ValueError('Estado de comanda inválido.')
+                    ticket_id = integer(body['id'])
+                    if db.execute('UPDATE production_tickets SET status=?,revision=? WHERE id=? AND revision=?',(status,uuid.uuid4().hex,ticket_id,str(body.get('revision','')))).rowcount != 1:
+                        raise ValueError('La comanda cambió. Actualiza la pantalla antes de marcarla.')
+                    db.commit()
+                    self.reply(200, {'tickets':tickets(db)})
+                    return
+                elif self.path == '/api/tables':
                     name = body.get('name', '')
                     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 60:
                         raise ValueError('Escribe un nombre de mesa de hasta 60 caracteres.')
@@ -191,11 +228,14 @@ class Handler(BaseHTTPRequestHandler):
                     profile = body.get('preparation_profile', 'auto')
                     if profile not in ('auto','burger','frappe','tea','cold_drink','none'):
                         raise ValueError('Selecciona un grupo de opciones de preparación válido.')
+                    station = body.get('production_station', 'auto')
+                    if station not in ('auto','kitchen','bar'):
+                        raise ValueError('Selecciona Cocina o Barra como área de preparación.')
                     if body.get('id'):
-                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=? WHERE id=?', (name,price,stock,category,description,managed,profile,integer(body['id']))).rowcount != 1:
+                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=?,production_station=? WHERE id=?', (name,price,stock,category,description,managed,profile,station,integer(body['id']))).rowcount != 1:
                             raise ValueError('Producto no encontrado.')
                     else:
-                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile) VALUES(?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile))
+                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile,production_station) VALUES(?,?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile,station))
                 elif self.path == '/api/open':
                     if shift:
                         raise ValueError('La caja ya está abierta.')
@@ -244,9 +284,12 @@ class Handler(BaseHTTPRequestHandler):
                             raise ValueError('Stock insuficiente. Actualiza la venta.')
                         rows.append((p,qty))
                         total += p['price']*qty
+                    production_id = pending['production_order_id'] if pending else None
                     if saving_order:
+                        production_id = send_tickets(db,order_lines,table['name'],now(),production_id)
                         clean_items = [{'id':pid,'quantity':qty,'notes':notes} for pid,qty,notes in order_lines]
                         db.execute('INSERT INTO table_orders(table_id,items,updated,revision) VALUES(?,?,?,?) ON CONFLICT(table_id) DO UPDATE SET items=excluded.items,updated=excluded.updated,revision=excluded.revision',(table_id,json.dumps(clean_items,ensure_ascii=False),now(),uuid.uuid4().hex))
+                        db.execute('UPDATE table_orders SET production_order_id=? WHERE table_id=?',(production_id,table_id))
                         db.commit()
                         self.reply(200, snapshot(db))
                         return
@@ -254,6 +297,8 @@ class Handler(BaseHTTPRequestHandler):
                     if received < total:
                         raise ValueError('El efectivo recibido es insuficiente.')
                     sid = db.execute('INSERT INTO sales(shift_id,created,total,payment,received) VALUES(?,?,?,?,?)',(shift['id'],now(),total,payment,received)).lastrowid
+                    production_id = send_tickets(db,order_lines,table['name'] if table else 'Mostrador / para llevar',now(),production_id,sid)
+                    db.execute('UPDATE sales SET production_order_id=? WHERE id=?',(production_id,sid))
                     db.execute('UPDATE sales SET table_id=?,table_name=? WHERE id=?',(table_id,table['name'] if table else '',sid))
                     if pending:
                         db.execute('DELETE FROM table_orders WHERE table_id=?',(table_id,))

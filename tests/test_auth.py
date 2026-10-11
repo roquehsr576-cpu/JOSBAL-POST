@@ -35,11 +35,11 @@ class Authentication(unittest.TestCase):
                         time.sleep(.05)
                 else:
                     self.fail('El servidor no inició')
-                for path in ('/','/app.js','/api/state'):
+                for path in ('/','/app.js','/api/state','/cocina','/barra','/ticket?id=1','/api/production','/api/tickets/1'):
                     with self.assertRaises(HTTPError) as error:
                         call(path)
                     self.assertEqual(error.exception.code,401)
-                for path in ('/api/tables','/api/orders'):
+                for path in ('/api/tables','/api/orders','/api/production/status'):
                     with self.assertRaises(HTTPError) as error:
                         call(path,body={'name':'Mesa no autorizada'})
                     self.assertEqual(error.exception.code,401)

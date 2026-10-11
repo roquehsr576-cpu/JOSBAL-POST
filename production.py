@@ -1,0 +1,42 @@
+import json
+import uuid
+
+BAR_CATEGORIES = frozenset(('Bebidas calientes','Tizanas calientes','Tés','Refrescantes','Chamoyadas','Bebidas sobre las rocas','Sodas italianas','Frappés','Malteadas','Smoothies'))
+
+def station_for(product):
+    station = product['production_station']
+    return station if station in ('kitchen','bar') else ('bar' if product['category'] in BAR_CATEGORIES else 'kitchen')
+
+def tickets(db, order_id=None):
+    where = 'WHERE t.order_id=?' if order_id else "WHERE t.status!='ready' OR t.id IN (SELECT id FROM production_tickets WHERE status='ready' ORDER BY id DESC LIMIT 50)"
+    rows = db.execute(f'SELECT t.*,o.table_name,o.created,o.sale_id FROM production_tickets t JOIN production_orders o ON o.id=t.order_id {where} ORDER BY o.id,t.id', (order_id,) if order_id else ())
+    result=[]
+    for r in rows:
+        ticket=dict(r)
+        ticket['items']=json.loads(ticket['items'])
+        ticket['changes']=json.loads(ticket['changes'])
+        result.append(ticket)
+    return result
+
+def send_tickets(db, lines, table_name, timestamp, order_id=None, sale_id=None):
+    if not order_id:
+        order_id=db.execute('INSERT INTO production_orders(table_name,created,sale_id) VALUES(?,?,?)',(table_name,timestamp,sale_id)).lastrowid
+    else:
+        db.execute('UPDATE production_orders SET table_name=?,sale_id=coalesce(?,sale_id) WHERE id=?',(table_name,sale_id,order_id))
+    grouped={'kitchen':[],'bar':[]}
+    for pid,qty,notes in lines:
+        p=db.execute('SELECT * FROM products WHERE id=?',(pid,)).fetchone()
+        grouped[station_for(p)].append({'id':pid,'name':p['name'],'quantity':qty,'notes':notes})
+    for station,items in grouped.items():
+        existing=db.execute('SELECT * FROM production_tickets WHERE order_id=? AND station=?',(order_id,station)).fetchone()
+        # An untouched saved order is not resent when it is paid.
+        if existing and json.loads(existing['items'])==items:
+            continue
+        if not items and not existing:
+            continue
+        # Keep the previous and current complete lists to make removals explicit.
+        changes={'previous':json.loads(existing['items']),'current':items} if existing else {}
+        status='pending'
+        revision=uuid.uuid4().hex
+        db.execute('INSERT INTO production_tickets(order_id,station,items,changes,status,updated,revision) VALUES(?,?,?,?,?,?,?) ON CONFLICT(order_id,station) DO UPDATE SET items=excluded.items,changes=excluded.changes,status=excluded.status,updated=excluded.updated,revision=excluded.revision',(order_id,station,json.dumps(items,ensure_ascii=False),json.dumps(changes,ensure_ascii=False),status,timestamp,revision))
+    return order_id

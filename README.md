@@ -84,3 +84,20 @@ Las 27 categorías de la carta incluyen imágenes ilustrativas generadas con est
 En **Productos → Editar → Opciones de preparación** puedes elegir un grupo distinto para un producto o **Solo indicaciones escritas**. El valor predeterminado es **Automáticas según categoría**. Las indicaciones de pedidos previos se conservan aunque cambies el grupo; las que ya no tienen una casilla correspondiente aparecen en el campo de texto. “Sin azúcar añadida” no indica que la bebida esté libre de azúcar.
 
 Validación de estas reglas: `node tests/test_preparation_options.js` (Node.js) además de las pruebas Python de ventas, pedidos y persistencia.
+
+## Comandas separadas para Cocina y Barra
+
+Una cuenta de venta conserva el total completo, pero su preparación se separa en dos tickets relacionados por el mismo **número de comanda** y **mesa**.
+
+1. Abre caja y toma el pedido de una mesa con alimentos y bebidas.
+2. Pulsa **Guardar y enviar comanda**. Cocina recibe alimentos y Barra recibe bebidas, con cantidades e indicaciones. Un área sin productos no recibe un ticket vacío.
+3. En el dispositivo de Cocina abre `/cocina`; en el de Barra abre `/barra`. Inicia sesión con las credenciales del sistema. Las pantallas consultan nuevos pedidos cada 5 segundos mientras permanecen abiertas y conectadas.
+4. Cada área puede marcar su ticket como **En preparación** o **Lista**, de manera independiente. **Mostrar listas recientes** muestra hasta las últimas 50 comandas listas además de las pendientes.
+5. Pulsa **Ver / imprimir ticket** y después **Imprimir este ticket**. El navegador abre el diálogo de impresión: selecciona la impresora de esa área y ajusta papel/márgenes para tu equipo. Esto no realiza impresión automática ni envía trabajos directamente a una impresora remota. Los tickets solo contienen productos de su área; son comandas de preparación, no comprobantes fiscales ni de pago.
+6. Al cobrar un pedido enviado, se conserva el número de comanda y el estado de preparación. No se duplica el envío si los productos no cambiaron. Una venta directa de mostrador genera sus comandas al cobrar.
+
+Las categorías de bebidas de la carta se asignan automáticamente a Barra; alimentos, postres y extras a Cocina. En **Productos → Editar → Área de preparación** puedes cambiar el destino a Cocina o Barra por producto, por ejemplo si los postres se sirven en Barra.
+
+Si se modifica un pedido enviado, solo las áreas cuyo contenido cambió vuelven a **Pendiente**. Su ticket muestra **COMANDA MODIFICADA**, el contenido anterior y el actual para revisar lo agregado o retirado. No vuelvas a preparar automáticamente toda la lista. Una actualización que retire todos los productos de un área conserva un aviso explícito de retirada para ese equipo. Los tickets e indicaciones sobreviven a reinicios. Las comandas nuevas se generan al guardar/enviar o cobrar: esta actualización no reenvía ventas antiguas ni pedidos previos de forma automática; abre y guarda un pedido previo para enviarlo.
+
+Puedes consultar los tickets de una comanda específica mediante `/cocina?pedido=NUMERO` o `/barra?pedido=NUMERO`. El detalle de venta incluye enlaces a ambas áreas. Cocina, Barra, tickets y sus API requieren autenticación y no se exponen en el menú público. No hay permisos individuales por rol en esta versión; ambos equipos usan el acceso compartido configurado.
