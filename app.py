@@ -1,4 +1,6 @@
 import json
+import base64
+import hmac
 import os
 import sqlite3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -52,6 +54,33 @@ def snapshot(db):
     return {'products': [dict(r) for r in db.execute('SELECT * FROM products ORDER BY name')], 'shift': result, 'sales': sales}
 
 class Handler(BaseHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('X-Frame-Options', 'DENY')
+        self.send_header('Referrer-Policy', 'no-referrer')
+        super().end_headers()
+
+    def authorized(self):
+        username = os.environ.get('JOSBAL_USER', '')
+        password = os.environ.get('JOSBAL_PASSWORD', '')
+        if not username and not password and os.environ.get('HOST', '127.0.0.1') == '127.0.0.1':
+            return True
+        try:
+            method, encoded = self.headers.get('Authorization', '').split(' ', 1)
+            supplied = base64.b64decode(encoded, validate=True).decode('utf-8')
+            user, secret = supplied.split(':', 1)
+            valid = method == 'Basic' and hmac.compare_digest(user.encode(), username.encode()) and hmac.compare_digest(secret.encode(), password.encode())
+        except (ValueError, UnicodeError):
+            valid = False
+        if valid and username and password:
+            return True
+        self.send_response(401)
+        self.send_header('WWW-Authenticate', 'Basic realm="JOSBAL", charset="UTF-8"')
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+        return False
+
     def reply(self, status, data):
         raw = json.dumps(data, ensure_ascii=False).encode()
         self.send_response(status)
@@ -61,6 +90,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
+        if not self.authorized():
+            return
         if self.path == '/api/state':
             with connect() as db:
                 self.reply(200, snapshot(db))
@@ -78,6 +109,11 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_POST(self):
+        if not self.authorized():
+            return
+        if self.headers.get('Sec-Fetch-Site') == 'cross-site' or self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+            self.reply(403, {'error': 'Solicitud no permitida.'})
+            return
         try:
             length = int(self.headers.get('Content-Length', '0'))
             if length > 65536:
@@ -148,6 +184,11 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(500, {'error':'No se pudo guardar la operación.'})
 
 if __name__ == '__main__':
+    host = os.environ.get('HOST', '127.0.0.1')
+    user = os.environ.get('JOSBAL_USER', '')
+    password = os.environ.get('JOSBAL_PASSWORD', '')
+    if (host != '127.0.0.1' or user or password) and (not user or ':' in user or len(password) < 16):
+        raise SystemExit('Configura JOSBAL_USER (sin dos puntos) y JOSBAL_PASSWORD de al menos 16 caracteres antes de permitir acceso de red.')
     server = ThreadingHTTPServer((os.environ.get('HOST','127.0.0.1'),int(os.environ.get('PORT','8000'))),Handler)
     print('JOSBAL-POST listo en puerto',server.server_port,flush=True)
     server.serve_forever()

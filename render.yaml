@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: josbal-post
+    runtime: python
+    plan: starter
+    buildCommand: python3 -m unittest discover -s tests -v
+    startCommand: python3 app.py
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: JOSBAL_DB
+        value: /var/data/josbal.sqlite3
+      - key: JOSBAL_USER
+        sync: false
+      - key: JOSBAL_PASSWORD
+        sync: false
+    disk:
+      name: josbal-datos
+      mountPath: /var/data
+      sizeGB: 1
