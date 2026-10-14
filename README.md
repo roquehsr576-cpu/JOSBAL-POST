@@ -30,7 +30,7 @@ python3 -m unittest discover -s tests -v
 - `HOST`: dirección de escucha, por defecto 127.0.0.1.
 - `JOSBAL_DB`: ruta alternativa del archivo SQLite.
 
-Copia el archivo SQLite con el servidor detenido para respaldar tus datos. Esta versión incluye una cuenta compartida configurable para acceso de red. Aún no incluye roles de usuarios, facturación fiscal, integración bancaria ni devoluciones. Para Internet utiliza HTTPS y almacenamiento permanente siguiendo la sección de Render.
+Copia el archivo SQLite con el servidor detenido para respaldar tus datos. Esta versión incluye cuentas individuales con roles, cancelaciones registradas y respaldos. Aún no incluye facturación fiscal ni integración bancaria. Para Internet utiliza HTTPS y almacenamiento permanente siguiendo la sección de Render.
 
 ## Acceso desde Internet con Render
 
@@ -43,7 +43,7 @@ El archivo `render.yaml` prepara un servicio de pago con disco persistente. Cons
 5. Cuando el servicio esté activo, abre la dirección **https://** que muestre Render. El navegador pedirá usuario y contraseña. El cifrado HTTPS lo proporciona Render.
 6. Agrega un producto, abre caja, realiza una venta de prueba y revisa el cierre. Reinicia el servicio y comprueba que los registros persisten antes de introducir operaciones reales.
 
-El servicio usa un acceso compartido mediante autenticación HTTP del navegador. No incluye cuentas individuales, roles ni cierre de sesión propio; cierra el navegador y evita dispositivos compartidos. Toda la página y la API requieren credenciales cuando hay acceso de red. Para uso local sin credenciales conserva HOST=127.0.0.1. Mantén un único servicio y disco; no escales a varias instancias con esta base SQLite. El disco conserva datos entre reinicios; no sustituye una estrategia de respaldos. La base local no se transfiere automáticamente al alojamiento.
+El administrador principal conserva el acceso configurado en Render. Las cuentas individuales usan la pantalla `/login`, sesiones y cierre de sesión propio. La caja y sus API requieren credenciales; la carta `/menu` es pública. Para uso local sin credenciales conserva HOST=127.0.0.1. Mantén un único servicio y disco; no escales a varias instancias con esta base SQLite. El disco conserva datos entre reinicios; no sustituye una estrategia de respaldos. La base local no se transfiere automáticamente al alojamiento.
 
 ## Menú digital Josbal Café
 
@@ -108,7 +108,7 @@ Las bebidas, waffles, pasteles, postres, croissants dulces y salados y crepas se
 
 Si se modifica un pedido enviado, solo las áreas cuyo contenido cambió vuelven a **Pendiente**. Su ticket muestra **COMANDA MODIFICADA**, el contenido anterior y el actual para revisar lo agregado o retirado. No vuelvas a preparar automáticamente toda la lista. Una actualización que retire todos los productos de un área conserva un aviso explícito de retirada para ese equipo. Los tickets e indicaciones sobreviven a reinicios. Las comandas nuevas se generan al guardar/enviar o cobrar: esta actualización no reenvía ventas antiguas ni pedidos previos de forma automática; abre y guarda un pedido previo para enviarlo.
 
-Puedes consultar los tickets de una comanda específica mediante `/cocina?pedido=NUMERO` o `/barra?pedido=NUMERO`. El detalle de venta incluye enlaces a ambas áreas. Cocina, Barra, tickets y sus API requieren autenticación y no se exponen en el menú público. No hay permisos individuales por rol en esta versión; ambos equipos usan el acceso compartido configurado.
+Puedes consultar los tickets de una comanda específica mediante `/cocina?pedido=NUMERO` o `/barra?pedido=NUMERO`. El detalle de venta incluye enlaces a ambas áreas. Cocina, Barra, tickets y sus API requieren autenticación y no se exponen en el menú público. Puedes iniciar sesión con una cuenta de administrador, cajero o mesero; solo administradores y cajeros pueden modificar los estados de preparación.
 
 
 ## Cancelar cobro y devolver inventario son acciones separadas
@@ -120,3 +120,32 @@ Tras cancelar, en **Historial → Ver detalle → Devolver unidades al inventari
 ## Quitar mesas de prueba
 
 En **Mesas → Configurar → Quitar mesa** se retira la mesa de la lista sin borrar ventas, motivos ni comandas anteriores. Si tiene un pedido pendiente, abre **Ver pedido → Cancelar pedido de la mesa** y registra el motivo primero. Para pruebas puedes elegir **Otro** e indicar “Pedido de prueba”. Si la venta ya fue cobrada, cancelarla es una operación distinta en Historial; quitar una mesa no cancela cobros. Puedes volver a agregar el mismo nombre de mesa más adelante.
+
+
+## Usuarios y permisos
+
+Abre `/login` e ingresa el usuario y contraseña del administrador principal que configuraste en Render (`JOSBAL_USER` y `JOSBAL_PASSWORD`). Esa cuenta permanece como administrador y se modifica en Render, no desde la lista de usuarios. En **Administración → Agregar usuario**, crea cuentas propias con contraseñas de 16 a 200 caracteres y el rol correspondiente:
+
+| Rol | Permisos |
+| --- | --- |
+| Administrador | Productos, precios, configuración de mesas, pedidos, caja, cobros, cancelaciones, inventario, usuarios y respaldos. |
+| Cajero | Abrir/cerrar caja, tomar pedidos, cobrar, consultar historial y modificar estados de preparación. No puede cancelar ni cambiar precios. |
+| Mesero | Ver catálogo y mesas, tomar y guardar pedidos, consultar comandas. No puede cobrar, cancelar, manejar caja ni ver historial de ventas. |
+
+Los permisos se validan en el servidor, no solo ocultando botones. Las acciones exitosas de modificación guardan usuario, rol, fecha y acción en un registro privado (`/api/audit`, últimas 200 entradas). Las contraseñas se guardan con sal individual y PBKDF2-SHA256, sin valores legibles; no se devuelven en las API. Las sesiones duran hasta 12 horas y las cookies usan HttpOnly, SameSite=Strict y Secure cuando HOST no es loopback (acceso público mediante HTTPS). Editar, desactivar o cambiar la contraseña de una cuenta revoca sus sesiones. **Cerrar sesión** lleva a `/login`; una sesión revocada no vuelve automáticamente al acceso básico que haya quedado guardado en el navegador. Diez intentos fallidos por nombre de usuario bloquean temporalmente la autenticación durante un minuto.
+
+Para probar localmente sin usuarios sigue disponible el modo loopback sin credenciales. Si creas cuentas en ese modo, la primera debe ser un administrador activo; al crearla se desactiva el acceso anónimo. No se crean empleados ni contraseñas predeterminadas.
+
+## Respaldos automáticos y recuperación
+
+El servidor crea una copia íntegra de SQLite al iniciar y cada 6 horas mientras está ejecutándose, y conserva las últimas 14 copias en `backups/` junto a la base (`/var/data/backups` en Render). Antes de migrar una base existente crea una copia previa. Usa la API de backup de SQLite para obtener una copia consistente con el servidor activo y comprueba `PRAGMA integrity_check`. En **Administración → Respaldos** puedes crear una copia inmediata y descargarla; solo administradores tienen acceso. Los errores de respaldo se muestran en esa sección. `JOSBAL_BACKUP_DIR` permite configurar otro directorio persistente.
+
+Estas copias comparten el disco con la base: protegen frente a cambios de datos, pero no frente a perder o eliminar todo el disco. Descarga periódicamente una copia y guárdala fuera de Render. Los archivos contienen información privada del negocio y hashes de cuentas; no los publiques. No está configurada una copia automática hacia un proveedor externo.
+
+Para verificar la recuperación en una copia nueva, sin sobrescribir la base en uso:
+
+```bash
+python3 backups.py /ruta/al/respaldo.sqlite3 /ruta/nueva/recuperada.sqlite3
+```
+
+El comando valida integridad y crea una base separada, sin sobrescribir un destino existente. Las sesiones de la copia recuperada se eliminan para no reactivar sesiones antiguas. Luego puedes probarla en otra instancia local con `JOSBAL_DB=/ruta/nueva/recuperada.sqlite3 PORT=8001 python3 app.py`. El reemplazo de la base de producción requiere una recuperación controlada con el servicio detenido; este comando no la reemplaza.

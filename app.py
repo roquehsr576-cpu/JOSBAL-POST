@@ -3,17 +3,24 @@ import base64
 import hmac
 import uuid
 import os
+import hashlib
+from http.cookies import SimpleCookie
 import sqlite3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from datetime import datetime, timezone
+import accounts
+from backups import Backups
 from production import send_tickets, tickets, cancel_tickets
 from adjustments import REASONS, reason_from, removed_lines, log_adjustment, adjustments
 
 ROOT = Path(__file__).parent
 DB = Path(os.environ.get('JOSBAL_DB', ROOT / 'data' / 'josbal.sqlite3'))
 DB.parent.mkdir(parents=True, exist_ok=True)
+BACKUPS = Backups(DB,os.environ.get('JOSBAL_BACKUP_DIR'))
+if DB.exists() and DB.stat().st_size:
+    BACKUPS.create('pre-upgrade')
 
 def connect():
     db = sqlite3.connect(DB)
@@ -22,6 +29,9 @@ def connect():
     return db
 
 with connect() as db:
+    accounts.initialize(db)
+    db.execute('DELETE FROM sessions WHERE bootstrap=1')
+    db.execute('CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,created TEXT NOT NULL,username TEXT NOT NULL,role TEXT NOT NULL,action TEXT NOT NULL)')
     had_inventory_returns = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_returns'").fetchone() is not None
     db.executescript('''
     CREATE TABLE IF NOT EXISTS production_orders(id INTEGER PRIMARY KEY AUTOINCREMENT,table_name TEXT NOT NULL,created TEXT NOT NULL,sale_id INTEGER REFERENCES sales(id));
@@ -117,24 +127,48 @@ class Handler(BaseHTTPRequestHandler):
         super().end_headers()
 
     def authorized(self):
-        username = os.environ.get('JOSBAL_USER', '')
-        password = os.environ.get('JOSBAL_PASSWORD', '')
-        if not username and not password and os.environ.get('HOST', '127.0.0.1') == '127.0.0.1':
-            return True
-        try:
-            method, encoded = self.headers.get('Authorization', '').split(' ', 1)
-            supplied = base64.b64decode(encoded, validate=True).decode('utf-8')
-            user, secret = supplied.split(':', 1)
-            valid = method == 'Basic' and hmac.compare_digest(user.encode(), username.encode()) and hmac.compare_digest(secret.encode(), password.encode())
-        except (ValueError, UnicodeError):
-            valid = False
-        if valid and username and password:
-            return True
+        self.user = None
+        with connect() as db:
+            token=''
+            cookie=SimpleCookie()
+            try:
+                cookie.load(self.headers.get('Cookie',''))
+                token=cookie['josbal_session'].value if 'josbal_session' in cookie else ''
+                if token:self.user=accounts.session_user(db,token)
+            except Exception:
+                pass
+            if not self.user and not token:
+                try:
+                    method,encoded=self.headers.get('Authorization','').split(' ',1)
+                    username,password=base64.b64decode(encoded,validate=True).decode().split(':',1)
+                    if method=='Basic':self.user=accounts.authenticate(db,username,password)
+                except (ValueError,UnicodeError):
+                    pass
+            if not self.user and not token and not os.environ.get('JOSBAL_USER') and not os.environ.get('JOSBAL_PASSWORD') and os.environ.get('HOST','127.0.0.1')=='127.0.0.1' and not db.execute('SELECT 1 FROM users WHERE active=1').fetchone():
+                self.user={'id':0,'username':'Local','role':'admin','active':1,'local':True}
+        if self.user:return True
         self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm="JOSBAL", charset="UTF-8"')
-        self.send_header('Content-Length', '0')
-        self.end_headers()
+        if not token:self.send_header('WWW-Authenticate','Basic realm="JOSBAL", charset="UTF-8"')
+        raw=json.dumps({'error':'Tu sesión terminó o no has iniciado sesión. Entra nuevamente en /login.'}).encode()
+        self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(raw)))
+        self.end_headers();self.wfile.write(raw)
         return False
+
+    def forbidden(self):
+        self.reply(403,{'error':'Tu cuenta no tiene permiso para esta acción. Solicita apoyo del administrador.'})
+
+    def state(self,db):
+        data=snapshot(db)
+        data['current_user']=self.user
+        if self.user['role']!='admin':data['adjustments']=[]
+        if self.user['role']=='waiter':
+            data['sales']=[]
+            data['shift']={k:v for k,v in data['shift'].items() if k in ('id','opened')} if data['shift'] else None
+        return data
+
+    def session_cookie(self,token):
+        secure='; Secure' if os.environ.get('HOST','127.0.0.1')!='127.0.0.1' else ''
+        self.send_header('Set-Cookie',f'josbal_session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age={43200 if token else 0}{secure}')
 
     def reply(self, status, data):
         raw = json.dumps(data, ensure_ascii=False).encode()
@@ -145,6 +179,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
+        if self.path in ('/login','/login.js','/login.css'):
+            name={'/login':'login.html','/login.js':'login.js','/login.css':'login.css'}[self.path]
+            raw=(ROOT/'static'/name).read_bytes()
+            self.send_response(200)
+            self.send_header('Content-Type',{'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css; charset=utf-8'}[name.rsplit('.',1)[1]])
+            self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+            return
         if self.path == '/api/menu':
             with connect() as db:
                 rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL ORDER BY menu_key')
@@ -161,6 +202,22 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(raw)
             return
         if not self.authorized():
+            return
+        if self.path in ('/api/users','/api/backups','/api/audit') or self.path.startswith('/api/backups/'):
+            if self.user['role']!='admin':self.forbidden();return
+            if self.path=='/api/users':
+                with connect() as db:self.reply(200,{'users':accounts.users(db)})
+            elif self.path=='/api/audit':
+                with connect() as db:self.reply(200,{'events':[dict(r) for r in db.execute('SELECT * FROM audit_log ORDER BY id DESC LIMIT 200')]})
+            elif self.path=='/api/backups':
+                self.reply(200,{'backups':BACKUPS.listing(),'error':BACKUPS.error,'interval_hours':6,'retained':14})
+            else:
+                try:
+                    path=BACKUPS.file(self.path.rsplit('/',1)[1])
+                    raw=path.read_bytes();self.send_response(200)
+                    self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Disposition',f'attachment; filename="{path.name}"')
+                    self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+                except ValueError:self.reply(404,{'error':'Respaldo no encontrado.'})
             return
         if urlsplit(self.path).path == '/api/production':
             try:
@@ -183,7 +240,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == '/api/state':
             with connect() as db:
-                self.reply(200, snapshot(db))
+                self.reply(200, self.state(db))
             return
         files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js', '/cocina':'production.html', '/barra':'production.html', '/production.js':'production.js', '/production.css':'production.css', '/ticket':'ticket.html', '/ticket.js':'ticket.js'}
         page = self.path.split('?',1)[0]
@@ -199,10 +256,37 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_POST(self):
+        if self.path == '/api/login':
+            if self.headers.get('Sec-Fetch-Site')=='cross-site' or self.headers.get('Content-Type','').split(';')[0]!='application/json':self.reply(403,{'error':'Solicitud no permitida.'});return
+            try:
+                length=int(self.headers.get('Content-Length','0'))
+                if not 0<length<=4096:raise ValueError('Solicitud inválida.')
+                body=json.loads(self.rfile.read(length))
+                username,password=body.get('username',''),body.get('password','')
+                if not isinstance(username,str) or not isinstance(password,str) or len(password)>200:raise ValueError('Datos inválidos.')
+                with connect() as db:
+                    user=accounts.authenticate(db,username,password)
+                    if not user:self.reply(401,{'error':'Usuario o contraseña incorrectos.'});return
+                    token=accounts.create_session(db,user)
+                raw=json.dumps({'user':user}).encode();self.send_response(200);self.session_cookie(token)
+                self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+            except (ValueError,TypeError):self.reply(400,{'error':'Datos inválidos.'})
+            return
         if not self.authorized():
             return
         if self.headers.get('Sec-Fetch-Site') == 'cross-site' or self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
             self.reply(403, {'error': 'Solicitud no permitida.'})
+            return
+        if self.path=='/api/logout':
+            cookie=SimpleCookie();cookie.load(self.headers.get('Cookie',''))
+            if 'josbal_session' in cookie:
+                with connect() as db:db.execute('DELETE FROM sessions WHERE token_hash=?',(hashlib.sha256(cookie['josbal_session'].value.encode()).hexdigest(),))
+            self.send_response(200);self.session_cookie('loggedout');self.send_header('Content-Length','0');self.end_headers();return
+        if self.user['role'] not in accounts.POST_ROLES.get(self.path,('admin',)):
+            self.forbidden();return
+        if self.path=='/api/backups':
+            try:BACKUPS.create();self.reply(200,{'backups':BACKUPS.listing(),'error':None})
+            except Exception:self.reply(500,{'error':BACKUPS.error})
             return
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -213,7 +297,11 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute('BEGIN IMMEDIATE')
                 shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL').fetchone()
                 extra = {}
-                if self.path == '/api/production/status':
+                db.execute('INSERT INTO audit_log(created,username,role,action) VALUES(?,?,?,?)',(now(),self.user['username'],self.user['role'],self.path))
+                if self.path == '/api/users':
+                    accounts.save_user(db,body)
+                    db.commit();self.reply(200,{'users':accounts.users(db)});return
+                elif self.path == '/api/production/status':
                     status = body.get('status')
                     if status not in ('pending','preparing','ready'):
                         raise ValueError('Estado de comanda inválido.')
@@ -377,7 +465,7 @@ class Handler(BaseHTTPRequestHandler):
                         db.execute('INSERT INTO table_orders(table_id,items,updated,revision) VALUES(?,?,?,?) ON CONFLICT(table_id) DO UPDATE SET items=excluded.items,updated=excluded.updated,revision=excluded.revision',(table_id,json.dumps(clean_items,ensure_ascii=False),now(),uuid.uuid4().hex))
                         db.execute('UPDATE table_orders SET production_order_id=? WHERE table_id=?',(production_id,table_id))
                         db.commit()
-                        self.reply(200, snapshot(db))
+                        self.reply(200, self.state(db))
                         return
                     received = money(body.get('received',0)) if payment == 'cash' else total
                     if received < total:
@@ -400,7 +488,7 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply(404, {'error':'No encontrado'})
                     return
                 db.commit()
-                self.reply(200, {**snapshot(db), **extra})
+                self.reply(200, {**self.state(db), **extra})
         except (ValueError, TypeError, KeyError, json.JSONDecodeError, OverflowError) as e:
             self.reply(400, {'error': str(e) if isinstance(e, ValueError) else 'Datos inválidos.'})
         except sqlite3.Error:
@@ -412,6 +500,7 @@ if __name__ == '__main__':
     password = os.environ.get('JOSBAL_PASSWORD', '')
     if (host != '127.0.0.1' or user or password) and (not user or ':' in user or len(password) < 16):
         raise SystemExit('Configura JOSBAL_USER (sin dos puntos) y JOSBAL_PASSWORD de al menos 16 caracteres antes de permitir acceso de red.')
+    BACKUPS.start()
     server = ThreadingHTTPServer((os.environ.get('HOST','127.0.0.1'),int(os.environ.get('PORT','8000'))),Handler)
     print('JOSBAL-POST listo en puerto',server.server_port,flush=True)
     server.serve_forever()
