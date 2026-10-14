@@ -61,7 +61,10 @@ class ProductionFlow(unittest.TestCase):
                 self.assertEqual(next(t for t in tickets if t['station']=='bar')['status'],'ready')
                 # Only the changed area is reopened, with previous contents retained for review.
                 order['items'][0]['notes']='Sin mostaza'
-                state=call('/api/orders',{**order,'order_revision':revision})
+                # Changing a sent preparation needs a recorded reason.
+                rejected('/api/orders',{**order,'order_revision':revision})
+                state=call('/api/orders',{**order,'order_revision':revision,'reason':'Cliente cambió de opinión'})
+                self.assertEqual(state['adjustments'][0]['items'][0]['notes'],'Sin cebolla')
                 revision=state['orders'][0]['revision']
                 tickets=call('/api/production')['tickets']
                 kitchen2=next(t for t in tickets if t['station']=='kitchen')

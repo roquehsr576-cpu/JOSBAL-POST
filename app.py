@@ -8,7 +8,8 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from datetime import datetime, timezone
-from production import send_tickets, tickets
+from production import send_tickets, tickets, cancel_tickets
+from adjustments import REASONS, reason_from, removed_lines, log_adjustment, adjustments
 
 ROOT = Path(__file__).parent
 DB = Path(os.environ.get('JOSBAL_DB', ROOT / 'data' / 'josbal.sqlite3'))
@@ -29,6 +30,7 @@ with connect() as db:
     CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY, name TEXT NOT NULL, price INTEGER NOT NULL CHECK(price>0), stock INTEGER NOT NULL CHECK(stock>=0));
     CREATE TABLE IF NOT EXISTS shifts(id INTEGER PRIMARY KEY, opened TEXT NOT NULL, opening INTEGER NOT NULL, closed TEXT, counted INTEGER);
     CREATE TABLE IF NOT EXISTS sales(id INTEGER PRIMARY KEY, shift_id INTEGER NOT NULL REFERENCES shifts(id), created TEXT NOT NULL, total INTEGER NOT NULL, payment TEXT NOT NULL, received INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS adjustments(id INTEGER PRIMARY KEY AUTOINCREMENT,created TEXT NOT NULL,kind TEXT NOT NULL,reason TEXT NOT NULL,notes TEXT NOT NULL DEFAULT '',items TEXT NOT NULL,amount INTEGER NOT NULL,table_name TEXT NOT NULL DEFAULT '',sale_id INTEGER REFERENCES sales(id),production_order_id INTEGER REFERENCES production_orders(id));
     CREATE TABLE IF NOT EXISTS items(sale_id INTEGER REFERENCES sales(id), product_id INTEGER REFERENCES products(id), name TEXT NOT NULL, quantity INTEGER NOT NULL, price INTEGER NOT NULL);
     ''')
     # Additive migration preserves existing products, inventory and sales.
@@ -43,6 +45,9 @@ with connect() as db:
         db.execute('ALTER TABLE sales ADD COLUMN table_id INTEGER REFERENCES dining_tables(id)')
     if 'table_name' not in sales_columns:
         db.execute("ALTER TABLE sales ADD COLUMN table_name TEXT NOT NULL DEFAULT ''")
+    for name, definition in [('cancelled', 'TEXT'), ('cancel_reason', "TEXT NOT NULL DEFAULT ''"), ('cancel_notes', "TEXT NOT NULL DEFAULT ''")]:
+        if name not in sales_columns:
+            db.execute(f'ALTER TABLE sales ADD COLUMN {name} {definition}')
     for table_name in ('sales','table_orders'):
         if 'production_order_id' not in {r['name'] for r in db.execute(f'PRAGMA table_info({table_name})')}:
             db.execute(f'ALTER TABLE {table_name} ADD COLUMN production_order_id INTEGER REFERENCES production_orders(id)')
@@ -77,14 +82,15 @@ def snapshot(db):
         sale['items'] = [dict(r) for r in db.execute('SELECT product_id,name,quantity,price,notes FROM items WHERE sale_id=? ORDER BY rowid', (sale['id'],))]
     result = dict(shift) if shift else None
     if result:
-        result['cash_sales'] = db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash'", (shift['id'],)).fetchone()[0]
-        result['total_sales'] = db.execute('SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=?', (shift['id'],)).fetchone()[0]
+        result['cash_sales'] = db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash' AND cancelled IS NULL", (shift['id'],)).fetchone()[0]
+        result['total_sales'] = db.execute('SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND cancelled IS NULL', (shift['id'],)).fetchone()[0]
+        result['cancelled_sales'] = db.execute('SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND cancelled IS NOT NULL', (shift['id'],)).fetchone()[0]
         result['expected'] = result['opening'] + result['cash_sales']
     tables = [dict(r) for r in db.execute('SELECT * FROM dining_tables ORDER BY id')]
     orders = [dict(r) for r in db.execute('SELECT * FROM table_orders ORDER BY table_id')]
     for order in orders:
         order['items'] = json.loads(order['items'])
-    return {'tables': tables, 'orders': orders, 'products': [dict(r) for r in db.execute('SELECT * FROM products ORDER BY name')], 'shift': result, 'sales': sales}
+    return {'tables': tables, 'orders': orders, 'products': [dict(r) for r in db.execute('SELECT * FROM products ORDER BY name')], 'shift': result, 'sales': sales, 'adjustments': adjustments(db), 'reasons': list(REASONS)}
 
 class Handler(BaseHTTPRequestHandler):
     def end_headers(self):
@@ -244,9 +250,37 @@ class Handler(BaseHTTPRequestHandler):
                     if not shift:
                         raise ValueError('La caja está cerrada.')
                     counted = money(body['counted'])
-                    expected = shift['opening'] + db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash'",(shift['id'],)).fetchone()[0]
+                    expected = shift['opening'] + db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash' AND cancelled IS NULL",(shift['id'],)).fetchone()[0]
                     db.execute('UPDATE shifts SET closed=?,counted=? WHERE id=?',(now(),counted,shift['id']))
                     extra = {'closing': {'expected': expected, 'counted': counted, 'difference': counted-expected}}
+                elif self.path == '/api/orders/cancel':
+                    table_id = integer(body['table_id'])
+                    pending = db.execute('SELECT o.*,t.name FROM table_orders o JOIN dining_tables t ON t.id=o.table_id WHERE o.table_id=?',(table_id,)).fetchone()
+                    if not pending:
+                        raise ValueError('Esta mesa no tiene un pedido pendiente.')
+                    if pending['revision'] != str(body.get('order_revision', '')):
+                        raise ValueError('El pedido cambió desde otro dispositivo. Recarga la página y vuelve a abrir la mesa.')
+                    reason, notes = reason_from(body)
+                    log_adjustment(db,'cancel_order',reason,notes,json.loads(pending['items']),now(),pending['name'],pending['production_order_id'])
+                    if pending['production_order_id']:
+                        cancel_tickets(db,pending['production_order_id'],now())
+                    db.execute('DELETE FROM table_orders WHERE table_id=?',(table_id,))
+                elif self.path == '/api/sales/cancel':
+                    sale = db.execute('SELECT * FROM sales WHERE id=?',(integer(body['id']),)).fetchone()
+                    if not sale:
+                        raise ValueError('Venta no encontrada.')
+                    if sale['cancelled']:
+                        raise ValueError('Esta venta ya fue cancelada.')
+                    if not shift or sale['shift_id'] != shift['id']:
+                        raise ValueError('Solo se pueden cancelar ventas del turno de caja abierto.')
+                    reason, notes = reason_from(body)
+                    sold = [dict(r) for r in db.execute('SELECT product_id AS id,name,quantity,price,notes FROM items WHERE sale_id=? ORDER BY rowid',(sale['id'],))]
+                    db.execute('UPDATE sales SET cancelled=?,cancel_reason=?,cancel_notes=? WHERE id=?',(now(),reason,notes,sale['id']))
+                    for line in sold:
+                        db.execute('UPDATE products SET stock=stock+? WHERE id=? AND inventory_managed=1',(line['quantity'],line['id']))
+                    if sale['production_order_id']:
+                        cancel_tickets(db,sale['production_order_id'],now())
+                    log_adjustment(db,'cancel_sale',reason,notes,sold,now(),sale['table_name'] or 'Mostrador / para llevar',sale['production_order_id'],sale['id'],sale['total'])
                 elif self.path in ('/api/sales', '/api/orders'):
                     if not shift:
                         raise ValueError('Abre la caja antes de cobrar.')
@@ -285,6 +319,10 @@ class Handler(BaseHTTPRequestHandler):
                         rows.append((p,qty))
                         total += p['price']*qty
                     production_id = pending['production_order_id'] if pending else None
+                    removed = removed_lines(json.loads(pending['items']),[{'id':pid,'quantity':qty,'notes':notes} for pid,qty,notes in order_lines]) if pending else []
+                    if removed:
+                        reason, reason_notes = reason_from(body)
+                        log_adjustment(db,'change',reason,reason_notes,removed,now(),table['name'],production_id)
                     if saving_order:
                         production_id = send_tickets(db,order_lines,table['name'],now(),production_id)
                         clean_items = [{'id':pid,'quantity':qty,'notes':notes} for pid,qty,notes in order_lines]

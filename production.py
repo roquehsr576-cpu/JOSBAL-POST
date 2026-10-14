@@ -40,3 +40,11 @@ def send_tickets(db, lines, table_name, timestamp, order_id=None, sale_id=None):
         revision=uuid.uuid4().hex
         db.execute('INSERT INTO production_tickets(order_id,station,items,changes,status,updated,revision) VALUES(?,?,?,?,?,?,?) ON CONFLICT(order_id,station) DO UPDATE SET items=excluded.items,changes=excluded.changes,status=excluded.status,updated=excluded.updated,revision=excluded.revision',(order_id,station,json.dumps(items,ensure_ascii=False),json.dumps(changes,ensure_ascii=False),status,timestamp,revision))
     return order_id
+
+def cancel_tickets(db, order_id, timestamp):
+    # Ready tickets were already delivered; only tickets still in preparation are withdrawn.
+    for t in db.execute("SELECT * FROM production_tickets WHERE order_id=? AND status!='ready'",(order_id,)).fetchall():
+        items=json.loads(t['items'])
+        if not items:
+            continue
+        db.execute('UPDATE production_tickets SET items=?,changes=?,status=?,updated=?,revision=? WHERE id=?',('[]',json.dumps({'previous':items,'current':[]},ensure_ascii=False),'pending',timestamp,uuid.uuid4().hex,t['id']))

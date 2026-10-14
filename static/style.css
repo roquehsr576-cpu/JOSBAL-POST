@@ -5,3 +5,11 @@
 .table-card h2{margin-bottom:10px}.table-card .actions{flex-wrap:wrap;justify-content:flex-start}.table-card .primary{padding:10px 12px}#save-order{width:100%;margin-top:20px;color:#138569;border-color:#138569}
 .product .food-photo{margin-bottom:15px}.product{overflow:hidden}.product .price{margin-top:8px}
 .station-link{color:#b5c8cc;text-decoration:none;text-align:left;padding:14px;font-weight:600;font-size:14px;border-radius:8px}.station-link:hover{background:#22444b;color:#6de0be}@media(max-width:700px){.station-link{padding:10px;font-size:12px}}
+.danger{background:white;color:#a53429;border:1px solid #e3b5ae;font-weight:650}
+.danger:hover{background:#fff1ef}
+#cancel-order{width:100%;margin-top:10px}
+.cancelled-tag{display:inline-block;background:#ffe3e0;color:#a53429;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;margin-left:6px}
+.cancelled-row td{color:#8a959c;text-decoration:line-through}
+.cancelled-row td:last-child{text-decoration:none}
+.cancel-note{background:#fff1ef;border:1px solid #f0c7c1;color:#7d2a21;border-radius:8px;padding:12px;font-size:13px}
+#reason-items{margin:10px 0}
