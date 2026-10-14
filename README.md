@@ -74,6 +74,7 @@ Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas ha
 - **Cancelar un pedido pendiente:** en la mesa, pulsa **Cancelar pedido de la mesa** y elige el motivo. Cocina y Barra reciben el aviso de no preparar lo que siga pendiente.
 - **Cancelar una venta cobrada:** en **Historial → Ver detalle**, pulsa **Cancelar venta**. Solo aplica a ventas del turno de caja abierto. La venta queda en el historial marcada como **CANCELADA**, se descuenta del corte de caja y las existencias controladas regresan al inventario. La devolución del dinero se entrega en efectivo o en la terminal de tarjeta por separado.
 - Motivos disponibles: cliente cambió de opinión, error al tomar el pedido, producto agotado, demora en el servicio, problema de calidad u otro (con descripción obligatoria). Puedes agregar detalles en todos los casos.
+- En **Cocina** y **Barra**, una comanda con cambio se resalta en **naranja** (“⚠ CAMBIO EN LA COMANDA”) con lo que hay que **agregar** y lo que hay que **quitar**; una comanda cancelada se resalta en **rojo** (“✕ CANCELADO · NO PREPARAR”). El color se mantiene hasta marcarla como lista. En el ticket impreso el aviso sale con un encabezado negro para distinguirlo en papel térmico.
 - **Cambios** muestra los últimos 200 registros con fecha, mesa, venta, comanda, productos, importe y motivo, y un resumen por motivo para detectar qué mejorar. Los registros no se pueden borrar desde la aplicación.
 
 ## Imágenes del menú
