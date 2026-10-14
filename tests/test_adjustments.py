@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import socket
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,25 @@ from urllib.request import Request,urlopen
 from urllib.error import HTTPError
 
 class AdjustmentsFlow(unittest.TestCase):
+    def test_legacy_cancelled_sales_cannot_be_restocked_twice(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dbpath=Path(tmp)/'db'
+            with sqlite3.connect(dbpath) as db:
+                db.executescript('''
+                CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,stock INTEGER NOT NULL);
+                CREATE TABLE sales(id INTEGER PRIMARY KEY,shift_id INTEGER,created TEXT,total INTEGER,payment TEXT,received INTEGER,cancelled TEXT);
+                CREATE TABLE items(sale_id INTEGER,product_id INTEGER,name TEXT,quantity INTEGER,price INTEGER,notes TEXT NOT NULL DEFAULT '');
+                INSERT INTO products VALUES(1,'Producto recuperado anteriormente',8000,5);
+                INSERT INTO sales VALUES(1,1,'2026-10-14',8000,'cash',8000,'2026-10-14');
+                INSERT INTO items VALUES(1,1,'Producto recuperado anteriormente',1,8000,'');
+                ''' )
+            env={**os.environ,'JOSBAL_DB':str(dbpath),'JOSBAL_IMPORT_MENU':'0'}
+            for _ in range(2):
+                subprocess.run([sys.executable,'-c','import app'],env=env,cwd=Path(__file__).resolve().parents[1],check=True,capture_output=True)
+            with sqlite3.connect(dbpath) as db:
+                self.assertEqual(db.execute('SELECT stock FROM products WHERE id=1').fetchone()[0],5)
+                self.assertEqual(db.execute('SELECT sum(quantity) FROM inventory_returns WHERE sale_id=1 AND product_id=1').fetchone()[0],1)
+
     def test_changes_and_cancellations_require_reason(self):
         with tempfile.TemporaryDirectory() as tmp:
             with socket.socket() as sock:
@@ -64,16 +84,30 @@ class AdjustmentsFlow(unittest.TestCase):
                 sale=state['sales'][0]
                 self.assertEqual(state['products'][0]['stock'],3)
                 self.assertEqual(state['shift']['expected'],26000)
+                ticket=call('/api/production')['tickets'][-1]
+                call('/api/production/status',{'id':ticket['id'],'revision':ticket['revision'],'status':'ready'})
                 rejected('/api/sales/cancel',{'id':sale['id']})
                 state=call('/api/sales/cancel',{'id':sale['id'],'reason':'Problema de calidad','reason_notes':'Carne cruda'})
                 self.assertEqual(state['sales'][0]['cancel_reason'],'Problema de calidad')
-                self.assertEqual(next(p for p in state['products'] if p['id']==burger)['stock'],5)
+                self.assertEqual(next(p for p in state['products'] if p['id']==burger)['stock'],3)
                 self.assertEqual((state['shift']['expected'],state['shift']['total_sales'],state['shift']['cancelled_sales']),(10000,0,16000))
                 self.assertEqual(state['adjustments'][0]['sale_id'],sale['id'])
                 rejected('/api/sales/cancel',{'id':sale['id'],'reason':'Otro','reason_notes':'Otra vez'})
+                # Refunding does not restock discarded/prepared food. Returning is separate and capped.
+                returned={'id':sale['id'],'reason':'Otro','reason_notes':'Una unidad sin preparar recuperable','items':[{'id':burger,'quantity':1}]}
+                state=call('/api/sales/return-stock',returned)
+                self.assertEqual(next(p for p in state['products'] if p['id']==burger)['stock'],4)
+                self.assertEqual(state['shift']['expected'],10000)
+                self.assertEqual(state['adjustments'][0]['kind'],'return_stock')
+                self.assertEqual(state['adjustments'][0]['amount'],0)
+                rejected('/api/sales/return-stock',{**returned,'items':[{'id':burger,'quantity':2}]})
+                state=call('/api/sales/return-stock',returned)
+                self.assertEqual(next(p for p in state['products'] if p['id']==burger)['stock'],5)
+                rejected('/api/sales/return-stock',returned)
                 self.assertEqual(call('/api/close',{'counted':'100'})['closing']['difference'],0)
                 call('/api/open',{'opening':'0'})
                 state=call('/api/sales',{'payment':'card','items':[{'id':latte,'quantity':1,'notes':''}]})
+                rejected('/api/sales/return-stock',{'id':state['sales'][0]['id'],'items':[{'id':latte,'quantity':1}],'reason':'Error al tomar el pedido'})
                 call('/api/close',{'counted':'0'})
                 rejected('/api/sales/cancel',{'id':state['sales'][0]['id'],'reason':'Producto agotado'})
             finally:

@@ -22,6 +22,7 @@ def connect():
     return db
 
 with connect() as db:
+    had_inventory_returns = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_returns'").fetchone() is not None
     db.executescript('''
     CREATE TABLE IF NOT EXISTS production_orders(id INTEGER PRIMARY KEY AUTOINCREMENT,table_name TEXT NOT NULL,created TEXT NOT NULL,sale_id INTEGER REFERENCES sales(id));
     CREATE TABLE IF NOT EXISTS production_tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL REFERENCES production_orders(id),station TEXT NOT NULL,items TEXT NOT NULL,changes TEXT NOT NULL DEFAULT '{}',status TEXT NOT NULL DEFAULT 'pending',updated TEXT NOT NULL,revision TEXT NOT NULL,UNIQUE(order_id,station));
@@ -30,6 +31,7 @@ with connect() as db:
     CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY, name TEXT NOT NULL, price INTEGER NOT NULL CHECK(price>0), stock INTEGER NOT NULL CHECK(stock>=0));
     CREATE TABLE IF NOT EXISTS shifts(id INTEGER PRIMARY KEY, opened TEXT NOT NULL, opening INTEGER NOT NULL, closed TEXT, counted INTEGER);
     CREATE TABLE IF NOT EXISTS sales(id INTEGER PRIMARY KEY, shift_id INTEGER NOT NULL REFERENCES shifts(id), created TEXT NOT NULL, total INTEGER NOT NULL, payment TEXT NOT NULL, received INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS inventory_returns(id INTEGER PRIMARY KEY AUTOINCREMENT,sale_id INTEGER NOT NULL REFERENCES sales(id),product_id INTEGER NOT NULL REFERENCES products(id),quantity INTEGER NOT NULL CHECK(quantity>0),created TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS adjustments(id INTEGER PRIMARY KEY AUTOINCREMENT,created TEXT NOT NULL,kind TEXT NOT NULL,reason TEXT NOT NULL,notes TEXT NOT NULL DEFAULT '',items TEXT NOT NULL,amount INTEGER NOT NULL,table_name TEXT NOT NULL DEFAULT '',sale_id INTEGER REFERENCES sales(id),production_order_id INTEGER REFERENCES production_orders(id));
     CREATE TABLE IF NOT EXISTS items(sale_id INTEGER REFERENCES sales(id), product_id INTEGER REFERENCES products(id), name TEXT NOT NULL, quantity INTEGER NOT NULL, price INTEGER NOT NULL);
     ''')
@@ -40,6 +42,8 @@ with connect() as db:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
     if 'notes' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
         db.execute("ALTER TABLE items ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
+    if 'inventory_managed_at_sale' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
+        db.execute('ALTER TABLE items ADD COLUMN inventory_managed_at_sale INTEGER')
     sales_columns = {r['name'] for r in db.execute('PRAGMA table_info(sales)')}
     if 'table_id' not in sales_columns:
         db.execute('ALTER TABLE sales ADD COLUMN table_id INTEGER REFERENCES dining_tables(id)')
@@ -51,6 +55,11 @@ with connect() as db:
     for table_name in ('sales','table_orders'):
         if 'production_order_id' not in {r['name'] for r in db.execute(f'PRAGMA table_info({table_name})')}:
             db.execute(f'ALTER TABLE {table_name} ADD COLUMN production_order_id INTEGER REFERENCES production_orders(id)')
+    if not had_inventory_returns:
+        # Old cancellations already restored stock automatically. Mark those units as returned.
+        db.execute('''INSERT INTO inventory_returns(sale_id,product_id,quantity,created)
+            SELECT s.id,i.product_id,sum(i.quantity),s.cancelled FROM sales s JOIN items i ON i.sale_id=s.id
+            WHERE s.cancelled IS NOT NULL GROUP BY s.id,i.product_id''')
     db.execute('CREATE UNIQUE INDEX IF NOT EXISTS products_menu_key ON products(menu_key)')
     if os.environ.get('JOSBAL_IMPORT_MENU', '1') == '1':
         menu = json.loads((ROOT / 'catalog' / 'menu.json').read_text())
@@ -79,6 +88,11 @@ def snapshot(db):
     shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL ORDER BY id DESC LIMIT 1').fetchone()
     sales = [dict(r) for r in db.execute('SELECT * FROM sales ORDER BY id DESC LIMIT 30')]
     for sale in sales:
+        sale['returnable_items'] = [dict(r) for r in db.execute('''
+            SELECT p.id,p.name,sum(i.quantity) - coalesce((SELECT sum(quantity) FROM inventory_returns WHERE sale_id=? AND product_id=p.id),0) AS remaining
+            FROM items i JOIN products p ON p.id=i.product_id
+            WHERE i.sale_id=? AND coalesce(i.inventory_managed_at_sale,p.inventory_managed)=1 AND p.inventory_managed=1
+            GROUP BY p.id HAVING remaining>0''',(sale['id'],sale['id']))]
         sale['items'] = [dict(r) for r in db.execute('SELECT product_id,name,quantity,price,notes FROM items WHERE sale_id=? ORDER BY rowid', (sale['id'],))]
     result = dict(shift) if shift else None
     if result:
@@ -276,11 +290,34 @@ class Handler(BaseHTTPRequestHandler):
                     reason, notes = reason_from(body)
                     sold = [dict(r) for r in db.execute('SELECT product_id AS id,name,quantity,price,notes FROM items WHERE sale_id=? ORDER BY rowid',(sale['id'],))]
                     db.execute('UPDATE sales SET cancelled=?,cancel_reason=?,cancel_notes=? WHERE id=?',(now(),reason,notes,sale['id']))
-                    for line in sold:
-                        db.execute('UPDATE products SET stock=stock+? WHERE id=? AND inventory_managed=1',(line['quantity'],line['id']))
                     if sale['production_order_id']:
                         cancel_tickets(db,sale['production_order_id'],now())
                     log_adjustment(db,'cancel_sale',reason,notes,sold,now(),sale['table_name'] or 'Mostrador / para llevar',sale['production_order_id'],sale['id'],sale['total'])
+                elif self.path == '/api/sales/return-stock':
+                    sale_id = integer(body['id'])
+                    sale = db.execute('SELECT * FROM sales WHERE id=?',(sale_id,)).fetchone()
+                    if not sale or not sale['cancelled']:
+                        raise ValueError('Solo puedes devolver inventario de una venta cancelada.')
+                    reason, notes = reason_from(body)
+                    quantities = {}
+                    for line in body['items']:
+                        pid, qty = integer(line['id']), integer(line['quantity'])
+                        if qty<=0:
+                            raise ValueError('Selecciona una cantidad mayor que cero para devolver.')
+                        quantities[pid] = quantities.get(pid,0)+qty
+                    if not quantities:
+                        raise ValueError('Selecciona las unidades recuperables que realmente regresan al inventario.')
+                    returned = []
+                    for pid, qty in quantities.items():
+                        product = db.execute('SELECT * FROM products WHERE id=?',(pid,)).fetchone()
+                        sold_qty = db.execute('SELECT coalesce(sum(quantity),0) FROM items WHERE sale_id=? AND product_id=? AND coalesce(inventory_managed_at_sale,?)=1',(sale_id,pid,product['inventory_managed'] if product else 0)).fetchone()[0]
+                        returned_qty = db.execute('SELECT coalesce(sum(quantity),0) FROM inventory_returns WHERE sale_id=? AND product_id=?',(sale_id,pid)).fetchone()[0]
+                        if not product or not product['inventory_managed'] or qty>sold_qty-returned_qty:
+                            raise ValueError('La cantidad supera las unidades disponibles para devolver o el producto no controla existencias.')
+                        db.execute('INSERT INTO inventory_returns(sale_id,product_id,quantity,created) VALUES(?,?,?,?)',(sale_id,pid,qty,now()))
+                        db.execute('UPDATE products SET stock=stock+? WHERE id=?',(qty,pid))
+                        returned.append({'id':pid,'quantity':qty})
+                    log_adjustment(db,'return_stock',reason,notes,returned,now(),sale['table_name'] or 'Mostrador / para llevar',sale['production_order_id'],sale_id,0)
                 elif self.path in ('/api/sales', '/api/orders'):
                     if not shift:
                         raise ValueError('Abre la caja antes de cobrar.')
@@ -346,7 +383,7 @@ class Handler(BaseHTTPRequestHandler):
                     products_by_id = {p['id']:p for p, qty in rows}
                     for pid, qty, notes in order_lines:
                         p = products_by_id[pid]
-                        db.execute('INSERT INTO items(sale_id,product_id,name,quantity,price,notes) VALUES(?,?,?,?,?,?)',(sid,pid,p['name'],qty,p['price'],notes))
+                        db.execute('INSERT INTO items(sale_id,product_id,name,quantity,price,notes,inventory_managed_at_sale) VALUES(?,?,?,?,?,?,?)',(sid,pid,p['name'],qty,p['price'],notes,p['inventory_managed']))
                     extra = {'receipt': {'id': sid, 'total':total, 'change':received-total}}
                 else:
                     self.reply(404, {'error':'No encontrado'})

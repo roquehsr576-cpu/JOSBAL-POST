@@ -39,7 +39,7 @@ class Authentication(unittest.TestCase):
                     with self.assertRaises(HTTPError) as error:
                         call(path)
                     self.assertEqual(error.exception.code,401)
-                for path in ('/api/tables','/api/orders','/api/production/status'):
+                for path in ('/api/tables','/api/orders','/api/production/status','/api/sales/return-stock'):
                     with self.assertRaises(HTTPError) as error:
                         call(path,body={'name':'Mesa no autorizada'})
                     self.assertEqual(error.exception.code,401)

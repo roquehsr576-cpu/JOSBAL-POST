@@ -72,7 +72,7 @@ Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas ha
 
 - **Quitar o cambiar productos de un pedido ya enviado:** en la mesa, usa **−** o cambia las indicaciones y pulsa **Guardar y enviar comanda** o **Cobrar venta**. El sistema pide el motivo antes de guardar. Agregar productos no requiere motivo.
 - **Cancelar un pedido pendiente:** en la mesa, pulsa **Cancelar pedido de la mesa** y elige el motivo. Cocina y Barra reciben el aviso de no preparar lo que siga pendiente.
-- **Cancelar una venta cobrada:** en **Historial → Ver detalle**, pulsa **Cancelar venta**. Solo aplica a ventas del turno de caja abierto. La venta queda en el historial marcada como **CANCELADA**, se descuenta del corte de caja y las existencias controladas regresan al inventario. La devolución del dinero se entrega en efectivo o en la terminal de tarjeta por separado.
+- **Cancelar una venta cobrada:** en **Historial → Ver detalle**, pulsa **Cancelar venta**. Solo aplica a ventas del turno de caja abierto. La venta queda en el historial marcada como **CANCELADA**, se descuenta del corte de caja sin devolver existencias automáticamente. La devolución del dinero se entrega en efectivo o en la terminal de tarjeta por separado.
 - Motivos disponibles: cliente cambió de opinión, error al tomar el pedido, producto agotado, demora en el servicio, problema de calidad u otro (con descripción obligatoria). Puedes agregar detalles en todos los casos.
 - **Cambios** muestra los últimos 200 registros con fecha, mesa, venta, comanda, productos, importe y motivo, y un resumen por motivo para detectar qué mejorar. Los registros no se pueden borrar desde la aplicación.
 
@@ -109,3 +109,10 @@ Las bebidas, waffles, pasteles, postres, croissants dulces y salados y crepas se
 Si se modifica un pedido enviado, solo las áreas cuyo contenido cambió vuelven a **Pendiente**. Su ticket muestra **COMANDA MODIFICADA**, el contenido anterior y el actual para revisar lo agregado o retirado. No vuelvas a preparar automáticamente toda la lista. Una actualización que retire todos los productos de un área conserva un aviso explícito de retirada para ese equipo. Los tickets e indicaciones sobreviven a reinicios. Las comandas nuevas se generan al guardar/enviar o cobrar: esta actualización no reenvía ventas antiguas ni pedidos previos de forma automática; abre y guarda un pedido previo para enviarlo.
 
 Puedes consultar los tickets de una comanda específica mediante `/cocina?pedido=NUMERO` o `/barra?pedido=NUMERO`. El detalle de venta incluye enlaces a ambas áreas. Cocina, Barra, tickets y sus API requieren autenticación y no se exponen en el menú público. No hay permisos individuales por rol en esta versión; ambos equipos usan el acceso compartido configurado.
+
+
+## Cancelar cobro y devolver inventario son acciones separadas
+
+**Cancelar venta** registra el motivo, ajusta el corte y retira lo pendiente en preparación. No suma existencias, incluso cuando la comida se haya preparado o descartado. La devolución del dinero sigue siendo manual: en efectivo o en la terminal de tarjeta.
+
+Tras cancelar, en **Historial → Ver detalle → Devolver unidades al inventario** selecciona explícitamente solo las unidades no preparadas y recuperables que realmente regresan. Introduce un motivo. Puedes devolver parcialmente; el sistema impide superar las cantidades descontadas o devolver dos veces las mismas unidades. Solo aplica a productos que controlan existencias. Este movimiento queda en **Cambios**, sin alterar el cobro ni el corte. Las cancelaciones anteriores a esta actualización, que ya devolvieron stock automáticamente, se registran como devoluciones anteriores al migrar para impedir una segunda devolución.
