@@ -26,6 +26,12 @@ function openPreparation(id,key=null){
 const roleNames={admin:'Administrador',cashier:'Cajero',waiter:'Mesero'};
 let managedUsers=[];
 function applyPermissions(){const role=state.current_user?.role||'admin';$('#account-label').textContent=(state.current_user?.username||'Local')+' · '+roleNames[role];for(const button of document.querySelectorAll('nav button[data-tab]')){const tab=button.dataset.tab;button.hidden=(['products','changes','settings'].includes(tab)&&role!=='admin')||(['cash','history'].includes(tab)&&role==='waiter');}$('#new-table').hidden=role!=='admin';$('#charge').hidden=role==='waiter';$('#checkout').hidden=role==='waiter';$('#create-backup').hidden=role!=='admin';if(role!=='admin')document.querySelectorAll('[data-table-edit]').forEach(b=>b.hidden=true);if(role!=='admin'){$('#cancel-order').hidden=true;$('#cancel-sale').hidden=true;$('#return-stock').hidden=true;}}
+function updateOrderShortcut(){const count=[...cart.values()].reduce((n,line)=>n+line.quantity,0);$('#mobile-order').hidden=$('#sell').hidden;$('#mobile-order-count').textContent=count+' '+(count===1?'producto':'productos')+' · '+($('#order-location').textContent||'Mostrador');$('#mobile-order-total').textContent=money(total());}
+function renderOrderReview(){const location=$('#order-location').textContent;$('#review-table').textContent=location;$('#review-items').innerHTML=[...cart].map(([key,line])=>{const product=state.products.find(p=>p.id===line.id);return `<div class="cart-row"><div class="row-top"><strong>${line.quantity} × ${esc(product.name)}</strong><span>${money(product.price*line.quantity)}</span></div><p class="order-notes">${esc(line.notes||'Preparación normal')}</p><button type="button" data-review-prepare="${key}">Cambiar indicaciones</button></div>`;}).join('')||'<p class="empty">Aún no agregas productos a este pedido.</p>';$('#review-total').textContent=money(total());$('#review-send').disabled=busy||!cart.size||!selectedTable||!state.shift;$('#review-help').textContent=!cart.size?'Agrega productos desde el catálogo.':!selectedTable?'Para enviar una comanda pendiente, selecciona una mesa en “Ir a mesa y cobro”.':!state.shift?'El cajero o administrador debe abrir la caja antes de enviar el pedido.':'La comanda conservará esta mesa y todas las indicaciones.';}
+$('#mobile-order').onclick=()=>{renderOrderReview();$('#order-review').showModal();};
+$('#close-review').onclick=$('#continue-order').onclick=()=>$('#order-review').close();
+$('#review-send').onclick=()=>{$('#order-review').close();$('#save-order').click();};
+$('#review-payment').onclick=()=>{$('#order-review').close();$('#current-order-panel').scrollIntoView({block:'start'});$('#current-order-panel').focus({preventScroll:true});};
 function render(){
  $('#order-table').innerHTML='<option value="">Mostrador / para llevar</option>'+state.tables.filter(t=>t.active).map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');$('#order-table').value=selectedTable;$('#order-table').disabled=busy;
  $('#order-location').textContent=state.tables.find(t=>String(t.id)===selectedTable)?.name||'Mostrador / para llevar';
@@ -48,11 +54,15 @@ function render(){
  $('#reason-summary').innerHTML=[...byReason].sort((a,b)=>b[1].count-a[1].count).map(([reason,r])=>`<div class="metric"><span class="muted">${esc(reason)}</span><strong>${r.count}</strong><span class="muted">${money(r.amount)} en productos</span></div>`).join('');
  $('#changes-list').innerHTML=state.adjustments.map(a=>`<tr><td>${new Date(a.created).toLocaleString('es-MX')}</td><td>${kindNames[a.kind]||esc(a.kind)}</td><td>${esc(a.table_name)}${a.sale_id?` · Venta #${String(a.sale_id).padStart(4,'0')}`:''}${a.production_order_id?` · Comanda #${a.production_order_id}`:''}</td><td>${a.items.map(i=>`${i.quantity} × ${esc(i.name)}${i.notes?` <span class="muted">(${esc(i.notes)})</span>`:''}`).join('<br>')}</td><td>${money(a.amount)}</td><td><strong>${esc(a.reason)}</strong>${a.notes?`<br><span class="muted">${esc(a.notes)}</span>`:''}</td></tr>`).join('')||'<tr><td colspan="6">Aún no hay cambios ni cancelaciones registrados.</td></tr>';
  applyPermissions();
+ updateOrderShortcut();
+ if($('#order-review').open)renderOrderReview();
 }
 function updateChange(){const cash=$('#checkout').elements.payment.value==='cash';$('#received-label').hidden=!cash;$('#change').textContent=cash?'Cambio: '+money(Math.max(0,Math.round(Number($('#checkout').elements.received.value)*100)-total())):'';}
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.tab){document.querySelectorAll('.tab').forEach(t=>t.hidden=t.id!==b.dataset.tab);document.querySelectorAll('nav button').forEach(n=>n.classList.toggle('active',n===b));$('#title').textContent={sell:'Nueva venta',products:'Productos',cash:'Control de caja',history:'Historial de ventas',tables:'Mesas y pedidos',changes:'Cambios y cancelaciones',settings:'Administración y respaldos'}[b.dataset.tab];}
+ if(b.dataset.tab)updateOrderShortcut();
+ if(b.dataset.reviewPrepare){$('#order-review').close();const key=Number(b.dataset.reviewPrepare);openPreparation(cart.get(key).id,key);}
  if(b.dataset.tab==='settings')loadSettings();
  if(b.dataset.userEdit)openUser(managedUsers.find(u=>u.id===Number(b.dataset.userEdit)));
  if(b.dataset.tableEdit)openTable(state.tables.find(t=>t.id===Number(b.dataset.tableEdit)));

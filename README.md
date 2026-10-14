@@ -149,3 +149,7 @@ python3 backups.py /ruta/al/respaldo.sqlite3 /ruta/nueva/recuperada.sqlite3
 ```
 
 El comando valida integridad y crea una base separada, sin sobrescribir un destino existente. Las sesiones de la copia recuperada se eliminan para no reactivar sesiones antiguas. Luego puedes probarla en otra instancia local con `JOSBAL_DB=/ruta/nueva/recuperada.sqlite3 PORT=8001 python3 app.py`. El reemplazo de la base de producción requiere una recuperación controlada con el servicio detenido; este comando no la reemplaza.
+
+## Revisar el pedido desde el celular
+
+En **Nueva venta** aparece un botón fijo inferior **Ver pedido**, con cantidad de productos, mesa y total. Abre un resumen con nombres, cantidades e indicaciones para repetir la orden al cliente antes de enviarla. Desde ahí puedes cambiar indicaciones, seguir agregando o **Confirmar y enviar comanda**. El resumen no guarda por sí solo: debes confirmar el envío para conservar el pedido. **Ir a mesa y cobro** lleva al panel completo; las opciones de cobro siguen restringidas por rol.
