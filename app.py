@@ -169,7 +169,7 @@ class Handler(BaseHTTPRequestHandler):
             with connect() as db:
                 self.reply(200, snapshot(db))
             return
-        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js', '/cocina':'production.html', '/barra':'production.html', '/production.js':'production.js', '/production.css':'production.css', '/ticket':'ticket.html', '/ticket.js':'ticket.js'}
+        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js', '/cocina':'production.html', '/barra':'production.html', '/production.js':'production.js', '/production.css':'production.css', '/ticket':'ticket.html', '/ticket.js':'ticket.js', '/changes.js':'changes.js'}
         page = self.path.split('?',1)[0]
         if page not in files:
             self.reply(404, {'error': 'No encontrado'})
