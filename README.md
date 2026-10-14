@@ -68,6 +68,14 @@ En **Nueva venta**, selecciona un producto y selecciona las opciones de preparac
 
 Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas hasta cobrarlos. No reservan existencias: disponibilidad y precios se verifican de nuevo al cobrar. Si otro dispositivo modifica o cobra el mismo pedido, el sistema rechaza operaciones con la versión antigua; recarga la página y vuelve a abrir la mesa. Una mesa con pedido pendiente no se puede desactivar. Renombrar una mesa no cambia el nombre guardado en ventas anteriores. La configuración y los pedidos son privados; no aparecen en la carta pública.
 
+## Cambios y cancelaciones con motivo
+
+- **Quitar o cambiar productos de un pedido ya enviado:** en la mesa, usa **−** o cambia las indicaciones y pulsa **Guardar y enviar comanda** o **Cobrar venta**. El sistema pide el motivo antes de guardar. Agregar productos no requiere motivo.
+- **Cancelar un pedido pendiente:** en la mesa, pulsa **Cancelar pedido de la mesa** y elige el motivo. Cocina y Barra reciben el aviso de no preparar lo que siga pendiente.
+- **Cancelar una venta cobrada:** en **Historial → Ver detalle**, pulsa **Cancelar venta**. Solo aplica a ventas del turno de caja abierto. La venta queda en el historial marcada como **CANCELADA**, se descuenta del corte de caja y las existencias controladas regresan al inventario. La devolución del dinero se entrega en efectivo o en la terminal de tarjeta por separado.
+- Motivos disponibles: cliente cambió de opinión, error al tomar el pedido, producto agotado, demora en el servicio, problema de calidad u otro (con descripción obligatoria). Puedes agregar detalles en todos los casos.
+- **Cambios** muestra los últimos 200 registros con fecha, mesa, venta, comanda, productos, importe y motivo, y un resumen por motivo para detectar qué mejorar. Los registros no se pueden borrar desde la aplicación.
+
 ## Imágenes del menú
 
 Las 27 categorías de la carta incluyen imágenes ilustrativas generadas con estilo de fotografía natural. Se muestran en la carta pública y en la caja; cada producto utiliza la imagen representativa de su categoría, no una fotografía exacta de cada variante. El aviso de imágenes ilustrativas es visible en ambas vistas. Las imágenes se sirven desde el mismo servidor, sin enlaces externos. El archivo `static/images/menu-photos.png` contiene las imágenes en una cuadrícula uniforme y `static/food-images.js` asigna cada categoría a su imagen. Las categorías nuevas sin una ilustración asignada conservan el diseño de texto.
