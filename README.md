@@ -116,3 +116,7 @@ Puedes consultar los tickets de una comanda específica mediante `/cocina?pedido
 **Cancelar venta** registra el motivo, ajusta el corte y retira lo pendiente en preparación. No suma existencias, incluso cuando la comida se haya preparado o descartado. La devolución del dinero sigue siendo manual: en efectivo o en la terminal de tarjeta.
 
 Tras cancelar, en **Historial → Ver detalle → Devolver unidades al inventario** selecciona explícitamente solo las unidades no preparadas y recuperables que realmente regresan. Introduce un motivo. Puedes devolver parcialmente; el sistema impide superar las cantidades descontadas o devolver dos veces las mismas unidades. Solo aplica a productos que controlan existencias. Este movimiento queda en **Cambios**, sin alterar el cobro ni el corte. Las cancelaciones anteriores a esta actualización, que ya devolvieron stock automáticamente, se registran como devoluciones anteriores al migrar para impedir una segunda devolución.
+
+## Quitar mesas de prueba
+
+En **Mesas → Configurar → Quitar mesa** se retira la mesa de la lista sin borrar ventas, motivos ni comandas anteriores. Si tiene un pedido pendiente, abre **Ver pedido → Cancelar pedido de la mesa** y registra el motivo primero. Para pruebas puedes elegir **Otro** e indicar “Pedido de prueba”. Si la venta ya fue cobrada, cancelarla es una operación distinta en Historial; quitar una mesa no cancela cobros. Puedes volver a agregar el mismo nombre de mesa más adelante.

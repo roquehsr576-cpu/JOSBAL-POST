@@ -44,6 +44,8 @@ with connect() as db:
         db.execute("ALTER TABLE items ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
     if 'inventory_managed_at_sale' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
         db.execute('ALTER TABLE items ADD COLUMN inventory_managed_at_sale INTEGER')
+    if 'removed' not in {r['name'] for r in db.execute('PRAGMA table_info(dining_tables)')}:
+        db.execute('ALTER TABLE dining_tables ADD COLUMN removed INTEGER NOT NULL DEFAULT 0')
     sales_columns = {r['name'] for r in db.execute('PRAGMA table_info(sales)')}
     if 'table_id' not in sales_columns:
         db.execute('ALTER TABLE sales ADD COLUMN table_id INTEGER REFERENCES dining_tables(id)')
@@ -100,7 +102,7 @@ def snapshot(db):
         result['total_sales'] = db.execute('SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND cancelled IS NULL', (shift['id'],)).fetchone()[0]
         result['cancelled_sales'] = db.execute('SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND cancelled IS NOT NULL', (shift['id'],)).fetchone()[0]
         result['expected'] = result['opening'] + result['cash_sales']
-    tables = [dict(r) for r in db.execute('SELECT * FROM dining_tables ORDER BY id')]
+    tables = [dict(r) for r in db.execute('SELECT * FROM dining_tables WHERE removed=0 ORDER BY id')]
     orders = [dict(r) for r in db.execute('SELECT * FROM table_orders ORDER BY table_id')]
     for order in orders:
         order['items'] = json.loads(order['items'])
@@ -221,6 +223,12 @@ class Handler(BaseHTTPRequestHandler):
                     db.commit()
                     self.reply(200, {'tickets':tickets(db)})
                     return
+                elif self.path == '/api/tables/remove':
+                    table_id = integer(body['id'])
+                    if db.execute('SELECT 1 FROM table_orders WHERE table_id=?',(table_id,)).fetchone():
+                        raise ValueError('Esta mesa tiene un pedido pendiente. Abre Ver pedido y cancélalo con su motivo antes de quitar la mesa.')
+                    if db.execute('UPDATE dining_tables SET removed=1,active=0 WHERE id=? AND removed=0',(table_id,)).rowcount != 1:
+                        raise ValueError('Mesa no encontrada.')
                 elif self.path == '/api/tables':
                     name = body.get('name', '')
                     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 60:
@@ -230,10 +238,13 @@ class Handler(BaseHTTPRequestHandler):
                     active = 0 if str(body.get('active', '1')) == '0' else 1
                     if tid and not active and db.execute('SELECT 1 FROM table_orders WHERE table_id=?',(tid,)).fetchone():
                         raise ValueError('Cobra el pedido pendiente antes de desactivar la mesa.')
+                    archived = db.execute('SELECT id FROM dining_tables WHERE name=? COLLATE NOCASE AND removed=1',(name,)).fetchone()
+                    if not tid and archived:
+                        tid = archived['id']
                     if db.execute('SELECT 1 FROM dining_tables WHERE name=? COLLATE NOCASE AND id!=?',(name,tid or 0)).fetchone():
                         raise ValueError('Ya existe una mesa con ese nombre.')
                     if tid:
-                        if db.execute('UPDATE dining_tables SET name=?,active=? WHERE id=?',(name,active,tid)).rowcount != 1:
+                        if db.execute('UPDATE dining_tables SET name=?,active=?,removed=0 WHERE id=?',(name,active,tid)).rowcount != 1:
                             raise ValueError('Mesa no encontrada.')
                     else:
                         db.execute('INSERT INTO dining_tables(name,active) VALUES(?,?)',(name,active))
@@ -323,7 +334,7 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError('Abre la caja antes de cobrar.')
                     saving_order = self.path == '/api/orders'
                     table_id = integer(body['table_id']) if body.get('table_id') else None
-                    table = db.execute('SELECT * FROM dining_tables WHERE id=? AND active=1',(table_id,)).fetchone() if table_id else None
+                    table = db.execute('SELECT * FROM dining_tables WHERE id=? AND active=1 AND removed=0',(table_id,)).fetchone() if table_id else None
                     if table_id and not table:
                         raise ValueError('Selecciona una mesa activa.')
                     if saving_order and not table:
