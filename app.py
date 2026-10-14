@@ -8,7 +8,7 @@ from http.cookies import SimpleCookie
 import sqlite3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import urlsplit, parse_qs
+from urllib.parse import urlsplit, parse_qs, quote
 from datetime import datetime, timezone
 import accounts
 from backups import Backups
@@ -147,6 +147,11 @@ class Handler(BaseHTTPRequestHandler):
             if not self.user and not token and not os.environ.get('JOSBAL_USER') and not os.environ.get('JOSBAL_PASSWORD') and os.environ.get('HOST','127.0.0.1')=='127.0.0.1' and not db.execute('SELECT 1 FROM users WHERE active=1').fetchone():
                 self.user={'id':0,'username':'Local','role':'admin','active':1,'local':True}
         if self.user:return True
+        if self.command=='GET' and urlsplit(self.path).path in ('/','/cocina','/barra','/ticket'):
+            self.send_response(303)
+            self.send_header('Location','/login?next='+quote(self.path,safe=''))
+            self.send_header('Content-Length','0');self.end_headers()
+            return False
         self.send_response(401)
         if not token:self.send_header('WWW-Authenticate','Basic realm="JOSBAL", charset="UTF-8"')
         raw=json.dumps({'error':'Tu sesión terminó o no has iniciado sesión. Entra nuevamente en /login.'}).encode()
@@ -179,8 +184,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
-        if self.path in ('/login','/login.js','/login.css'):
-            name={'/login':'login.html','/login.js':'login.js','/login.css':'login.css'}[self.path]
+        if urlsplit(self.path).path in ('/login','/login.js','/login.css'):
+            name={'/login':'login.html','/login.js':'login.js','/login.css':'login.css'}[urlsplit(self.path).path]
             raw=(ROOT/'static'/name).read_bytes()
             self.send_response(200)
             self.send_header('Content-Type',{'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css; charset=utf-8'}[name.rsplit('.',1)[1]])

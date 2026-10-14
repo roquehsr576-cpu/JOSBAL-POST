@@ -35,10 +35,16 @@ class Authentication(unittest.TestCase):
                         time.sleep(.05)
                 else:
                     self.fail('El servidor no inició')
-                for path in ('/','/app.js','/api/state','/cocina','/barra','/ticket?id=1','/api/production','/api/tickets/1'):
+                for path in ('/app.js','/api/state','/api/production','/api/tickets/1'):
                     with self.assertRaises(HTTPError) as error:
                         call(path)
                     self.assertEqual(error.exception.code,401)
+                for path in ('/','/cocina','/barra','/ticket?id=1'):
+                    for cookie in ('', 'josbal_session=expired-session'):
+                        with call(path,extra={'Cookie':cookie}) as response:
+                            self.assertEqual(response.status,200)
+                            self.assertIn('/login?next=',response.url)
+                            self.assertIn(b'login-form',response.read())
                 for path in ('/api/tables','/api/orders','/api/production/status','/api/sales/return-stock'):
                     with self.assertRaises(HTTPError) as error:
                         call(path,body={'name':'Mesa no autorizada'})
