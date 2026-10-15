@@ -35,7 +35,7 @@ class Authentication(unittest.TestCase):
                         time.sleep(.05)
                 else:
                     self.fail('El servidor no inició')
-                for path in ('/app.js','/api/state','/api/production','/api/tickets/1'):
+                for path in ('/app.js','/api/state','/api/production','/api/tickets/1','/api/ready-events'):
                     with self.assertRaises(HTTPError) as error:
                         call(path)
                     self.assertEqual(error.exception.code,401)

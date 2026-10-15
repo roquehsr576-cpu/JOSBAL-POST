@@ -158,3 +158,11 @@ En **Nueva venta** aparece un botón fijo inferior **Ver pedido**, con cantidad 
 ### Enviar comandas desde el resumen móvil
 
 En **Ver pedido** puedes seleccionar la mesa directamente y pulsar **Confirmar y enviar comanda**, incluso con la caja cerrada. Abrir caja sigue siendo obligatorio para cobrar. En el panel completo, el texto sobre **Guardar y enviar comanda** indica si faltan productos o seleccionar mesa; el botón deja de bloquearse por el estado de la caja. Los pedidos e indicaciones se conservan al abrir el panel completo.
+
+## Avisos de pedidos listos
+
+En la caja y en el celular del mesero pulsa **Activar avisos con sonido** una vez. Sonará una prueba. Después, cuando Cocina o Barra marque una comanda como **Lista**, aparece un aviso con área, mesa y número de comanda y suena un timbre corto si el navegador permite audio. Si todas las áreas con productos están listas, el aviso indica **Pedido completo**; de lo contrario indica que la otra área aún debe revisarse. **Enterado** retira el aviso de ese dispositivo; no cambia la comanda.
+
+Se consultan eventos cada 5 segundos. Cada transición nueva a Lista genera un evento persistido; no se repite por cobrar el pedido ni por consultar de nuevo con el mismo cursor. La primera carga comienza a escuchar eventos nuevos, sin hacer sonar comandas antiguas. Reabrir y volver a marcar Lista genera un nuevo aviso. Los tickets vaciados por retirada/cancelación no generan un aviso de preparación terminada.
+
+Mantén JOSBAL abierto y con volumen audible. Los navegadores móviles pueden suspender el audio y la consulta con la pantalla bloqueada o la aplicación en segundo plano; no son notificaciones push. Si se suspende el audio, vuelve a activar el botón. Los avisos visuales funcionan sin habilitar sonido. No se ha configurado envío por WhatsApp ni sonido con el navegador cerrado.

@@ -34,6 +34,7 @@ with connect() as db:
     db.execute('CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,created TEXT NOT NULL,username TEXT NOT NULL,role TEXT NOT NULL,action TEXT NOT NULL)')
     had_inventory_returns = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_returns'").fetchone() is not None
     db.executescript('''
+    CREATE TABLE IF NOT EXISTS ready_events(id INTEGER PRIMARY KEY AUTOINCREMENT,ticket_id INTEGER NOT NULL,order_id INTEGER NOT NULL,station TEXT NOT NULL,table_name TEXT NOT NULL,created TEXT NOT NULL,all_ready INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS production_orders(id INTEGER PRIMARY KEY AUTOINCREMENT,table_name TEXT NOT NULL,created TEXT NOT NULL,sale_id INTEGER REFERENCES sales(id));
     CREATE TABLE IF NOT EXISTS production_tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL REFERENCES production_orders(id),station TEXT NOT NULL,items TEXT NOT NULL,changes TEXT NOT NULL DEFAULT '{}',status TEXT NOT NULL DEFAULT 'pending',updated TEXT NOT NULL,revision TEXT NOT NULL,UNIQUE(order_id,station));
     CREATE TABLE IF NOT EXISTS dining_tables(id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, active INTEGER NOT NULL DEFAULT 1);
@@ -224,6 +225,19 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
                 except ValueError:self.reply(404,{'error':'Respaldo no encontrado.'})
             return
+        if urlsplit(self.path).path == '/api/ready-events':
+            try:
+                params=parse_qs(urlsplit(self.path).query)
+                with connect() as db:
+                    latest=db.execute('SELECT coalesce(max(id),0) FROM ready_events').fetchone()[0]
+                    if 'after' not in params:
+                        self.reply(200,{'events':[],'cursor':latest})
+                    else:
+                        after=integer(params['after'][0])
+                        events=[dict(r) for r in db.execute('SELECT * FROM ready_events WHERE id>? ORDER BY id LIMIT 50',(after,))]
+                        self.reply(200,{'events':events,'cursor':events[-1]['id'] if events else latest})
+            except ValueError:self.reply(400,{'error':'Consulta de avisos inválida.'})
+            return
         if urlsplit(self.path).path == '/api/production':
             try:
                 order_filter = parse_qs(urlsplit(self.path).query).get('pedido',[None])[0]
@@ -247,7 +261,7 @@ class Handler(BaseHTTPRequestHandler):
             with connect() as db:
                 self.reply(200, self.state(db))
             return
-        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/preparation-options.js': 'preparation-options.js', '/cocina':'production.html', '/barra':'production.html', '/production.js':'production.js', '/production.css':'production.css', '/ticket':'ticket.html', '/ticket.js':'ticket.js'}
+        files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/ready-alerts.js':'ready-alerts.js', '/preparation-options.js': 'preparation-options.js', '/cocina':'production.html', '/barra':'production.html', '/production.js':'production.js', '/production.css':'production.css', '/ticket':'ticket.html', '/ticket.js':'ticket.js'}
         page = self.path.split('?',1)[0]
         if page not in files:
             self.reply(404, {'error': 'No encontrado'})
@@ -311,8 +325,14 @@ class Handler(BaseHTTPRequestHandler):
                     if status not in ('pending','preparing','ready'):
                         raise ValueError('Estado de comanda inválido.')
                     ticket_id = integer(body['id'])
+                    previous=db.execute('SELECT * FROM production_tickets WHERE id=?',(ticket_id,)).fetchone()
                     if db.execute('UPDATE production_tickets SET status=?,revision=? WHERE id=? AND revision=?',(status,uuid.uuid4().hex,ticket_id,str(body.get('revision','')))).rowcount != 1:
                         raise ValueError('La comanda cambió. Actualiza la pantalla antes de marcarla.')
+                    if status=='ready' and previous['status']!='ready' and json.loads(previous['items']):
+                        order=db.execute('SELECT * FROM production_orders WHERE id=?',(previous['order_id'],)).fetchone()
+                        relevant=[r for r in db.execute('SELECT status,items FROM production_tickets WHERE order_id=?',(previous['order_id'],)) if json.loads(r['items'])]
+                        all_ready=all(r['status']=='ready' for r in relevant)
+                        db.execute('INSERT INTO ready_events(ticket_id,order_id,station,table_name,created,all_ready) VALUES(?,?,?,?,?,?)',(ticket_id,previous['order_id'],previous['station'],order['table_name'],now(),int(all_ready)))
                     db.commit()
                     self.reply(200, {'tickets':tickets(db)})
                     return
