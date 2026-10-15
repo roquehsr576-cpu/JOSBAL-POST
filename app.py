@@ -62,7 +62,7 @@ with connect() as db:
         db.execute('ALTER TABLE sales ADD COLUMN table_id INTEGER REFERENCES dining_tables(id)')
     if 'table_name' not in sales_columns:
         db.execute("ALTER TABLE sales ADD COLUMN table_name TEXT NOT NULL DEFAULT ''")
-    for name, definition in [('cancelled', 'TEXT'), ('cancel_reason', "TEXT NOT NULL DEFAULT ''"), ('cancel_notes', "TEXT NOT NULL DEFAULT ''")]:
+    for name, definition in [('archived_at','TEXT'),('archived_by',"TEXT NOT NULL DEFAULT ''"),('cancelled', 'TEXT'), ('cancel_reason', "TEXT NOT NULL DEFAULT ''"), ('cancel_notes', "TEXT NOT NULL DEFAULT ''")]:
         if name not in sales_columns:
             db.execute(f'ALTER TABLE sales ADD COLUMN {name} {definition}')
     for table_name in ('sales','table_orders'):
@@ -97,9 +97,9 @@ def integer(value):
 def now():
     return datetime.now(timezone.utc).isoformat()
 
-def snapshot(db):
-    shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL ORDER BY id DESC LIMIT 1').fetchone()
-    sales = [dict(r) for r in db.execute('SELECT * FROM sales ORDER BY id DESC LIMIT 30')]
+def sale_history(db,archived=False,before=9223372036854775807):
+    condition='archived_at IS NOT NULL' if archived else 'archived_at IS NULL'
+    sales=[dict(r) for r in db.execute(f'SELECT * FROM sales WHERE {condition} AND id<? ORDER BY id DESC LIMIT 30',(before,))]
     for sale in sales:
         sale['returnable_items'] = [dict(r) for r in db.execute('''
             SELECT p.id,p.name,sum(i.quantity) - coalesce((SELECT sum(quantity) FROM inventory_returns WHERE sale_id=? AND product_id=p.id),0) AS remaining
@@ -107,6 +107,11 @@ def snapshot(db):
             WHERE i.sale_id=? AND coalesce(i.inventory_managed_at_sale,p.inventory_managed)=1 AND p.inventory_managed=1
             GROUP BY p.id HAVING remaining>0''',(sale['id'],sale['id']))]
         sale['items'] = [dict(r) for r in db.execute('SELECT product_id,name,quantity,price,notes FROM items WHERE sale_id=? ORDER BY rowid', (sale['id'],))]
+    return sales
+
+def snapshot(db):
+    shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL ORDER BY id DESC LIMIT 1').fetchone()
+    sales=sale_history(db)
     result = dict(shift) if shift else None
     if result:
         result['cash_sales'] = db.execute("SELECT coalesce(sum(total),0) FROM sales WHERE shift_id=? AND payment='cash' AND cancelled IS NULL", (shift['id'],)).fetchone()[0]
@@ -225,6 +230,17 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
                 except ValueError:self.reply(404,{'error':'Respaldo no encontrado.'})
             return
+        if urlsplit(self.path).path == '/api/sales-history':
+            if self.user['role']=='waiter':self.forbidden();return
+            try:
+                params=parse_qs(urlsplit(self.path).query)
+                archived=params.get('archived',['0'])[0]=='1'
+                before=integer(params['before'][0]) if 'before' in params else 9223372036854775807
+                with connect() as db:
+                    rows=sale_history(db,archived,before)
+                    self.reply(200,{'sales':rows,'next':rows[-1]['id'] if len(rows)==30 else None})
+            except (ValueError,OverflowError):self.reply(400,{'error':'Consulta de historial inválida.'})
+            return
         if urlsplit(self.path).path == '/api/ready-events':
             try:
                 params=parse_qs(urlsplit(self.path).query)
@@ -317,7 +333,18 @@ class Handler(BaseHTTPRequestHandler):
                 shift = db.execute('SELECT * FROM shifts WHERE closed IS NULL').fetchone()
                 extra = {}
                 db.execute('INSERT INTO audit_log(created,username,role,action) VALUES(?,?,?,?)',(now(),self.user['username'],self.user['role'],self.path))
-                if self.path == '/api/users':
+                if self.path == '/api/sales/archive':
+                    if not isinstance(body.get('ids'),list) or not 1<=len(body['ids'])<=1000:
+                        raise ValueError('Selecciona de 1 a 1000 ventas.')
+                    ids=sorted({integer(value) for value in body['ids']})
+                    archive=body.get('archive')
+                    if not isinstance(archive,bool):raise ValueError('Acción de archivo inválida.')
+                    marks=','.join('?' for _ in ids)
+                    found=db.execute(f'SELECT count(*) FROM sales WHERE id IN ({marks})',ids).fetchone()[0]
+                    if found!=len(ids):raise ValueError('Alguna venta no existe. Actualiza el historial.')
+                    db.execute(f'UPDATE sales SET archived_at=?,archived_by=? WHERE id IN ({marks})',(now() if archive else None,self.user['username'] if archive else '',*ids))
+                    db.execute('INSERT INTO audit_log(created,username,role,action) VALUES(?,?,?,?)',(now(),self.user['username'],self.user['role'],('archive:' if archive else 'restore:')+','.join(map(str,ids))))
+                elif self.path == '/api/users':
                     accounts.save_user(db,body)
                     db.commit();self.reply(200,{'users':accounts.users(db)});return
                 elif self.path == '/api/production/status':

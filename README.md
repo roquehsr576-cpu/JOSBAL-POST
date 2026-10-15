@@ -166,3 +166,9 @@ En la caja y en el celular del mesero pulsa **Activar avisos con sonido** una ve
 Se consultan eventos cada 5 segundos. Cada transición nueva a Lista genera un evento persistido; no se repite por cobrar el pedido ni por consultar de nuevo con el mismo cursor. La primera carga comienza a escuchar eventos nuevos, sin hacer sonar comandas antiguas. Reabrir y volver a marcar Lista genera un nuevo aviso. Los tickets vaciados por retirada/cancelación no generan un aviso de preparación terminada.
 
 Mantén JOSBAL abierto y con volumen audible. Los navegadores móviles pueden suspender el audio y la consulta con la pantalla bloqueada o la aplicación en segundo plano; no son notificaciones push. Si se suspende el audio, vuelve a activar el botón. Los avisos visuales funcionan sin habilitar sonido. No se ha configurado envío por WhatsApp ni sonido con el navegador cerrado.
+
+## Archivar historial de ventas
+
+Solo administradores pueden archivar o restaurar ventas. En **Historial → Ver detalle → Archivar venta** se oculta una venta del historial principal; **Archivar ventas mostradas** archiva únicamente la página visible, hasta 30 ventas. La pantalla pide confirmar. El selector **Ventas archivadas** permite consultar los registros y sus detalles, y restaurarlos individualmente o por página. **Ver anteriores** recorre el historial por páginas.
+
+Archivar no elimina registros, no cancela cobros y no modifica caja, inventario, comandas ni ajustes. Las ventas archivadas siguen incluidas en el corte del turno al que pertenecen. Se guarda quién archivó cada venta y cuándo, y se registra la acción en auditoría. Para anular una venta de prueba cobrada usa su cancelación por separado cuando proceda; archivar solamente cambia su visibilidad. No se archivan ventas automáticamente al instalar esta función.

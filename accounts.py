@@ -102,4 +102,4 @@ POST_ROLES={
  '/api/open':('admin','cashier'),'/api/close':('admin','cashier'),'/api/sales':('admin','cashier'),
  '/api/orders':ROLES,'/api/production/status':('admin','cashier'),
  '/api/orders/cancel':('admin',),'/api/sales/cancel':('admin',),'/api/sales/return-stock':('admin',),
- '/api/users':('admin',),'/api/backups':('admin',)}
+ '/api/sales/archive':('admin',),'/api/users':('admin',),'/api/backups':('admin',)}

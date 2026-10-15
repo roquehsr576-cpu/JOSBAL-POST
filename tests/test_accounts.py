@@ -54,6 +54,23 @@ class AccountPermissions(unittest.TestCase):
                 sale=request('/api/sales',{'payment':'cash','received':'30','items':[{'id':product,'quantity':1}]},cashier)[0]
                 self.assertEqual(sale['receipt']['total'],3000)
                 denied('/api/sales/cancel',{'id':sale['receipt']['id'],'reason':'Error al tomar el pedido'},cashier)
+                denied('/api/sales/archive',{'ids':[sale['receipt']['id']],'archive':True},cashier)
+                denied('/api/sales/archive',{'ids':[sale['receipt']['id']],'archive':True},waiter)
+                denied('/api/sales-history',cookie=waiter)
+                previous=request('/api/state',basic=admin)[0]
+                commands=request('/api/production',basic=admin)[0]
+                archived=request('/api/sales/archive',{'ids':[sale['receipt']['id']],'archive':True},basic=admin)[0]
+                self.assertEqual(archived['sales'],[])
+                self.assertEqual(archived['shift'],previous['shift'])
+                self.assertEqual(archived['products'],previous['products'])
+                self.assertEqual(request('/api/production',basic=admin)[0],commands)
+                history=request('/api/sales-history?archived=1',basic=admin)[0]['sales']
+                self.assertEqual(history[0]['id'],sale['receipt']['id'])
+                self.assertEqual(history[0]['archived_by'],'owner')
+                self.assertEqual(history[0]['items'][0]['name'],'Café')
+                restored=request('/api/sales/archive',{'ids':[sale['receipt']['id']],'archive':False},basic=admin)[0]
+                self.assertEqual(restored['sales'][0]['id'],sale['receipt']['id'])
+                self.assertEqual(request('/api/sales-history?archived=1',basic=admin)[0]['sales'],[])
                 backup=request('/api/backups',{},basic=admin)[0]['backups'][0]['name']
                 raw=request('/api/backups/'+backup,basic=admin)[0]
                 self.assertTrue(raw.startswith(b'SQLite format 3'))
