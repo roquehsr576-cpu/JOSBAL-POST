@@ -97,7 +97,7 @@ Validación de estas reglas: `node tests/test_preparation_options.js` (Node.js) 
 
 Una cuenta de venta conserva el total completo, pero su preparación se separa en dos tickets relacionados por el mismo **número de comanda** y **mesa**.
 
-1. Abre caja y toma el pedido de una mesa con alimentos y bebidas.
+1. Toma el pedido de una mesa con alimentos y bebidas. No es necesario abrir caja para enviar una comanda; sí para cobrar.
 2. Pulsa **Guardar y enviar comanda**. Cocina recibe sus platos y Barra recibe bebidas, postres y croissants, con cantidades e indicaciones. Un área sin productos no recibe un ticket vacío.
 3. En el dispositivo de Cocina abre `/cocina`; en el de Barra abre `/barra`. Inicia sesión con las credenciales del sistema. Las pantallas consultan nuevos pedidos cada 5 segundos mientras permanecen abiertas y conectadas.
 4. Cada área puede marcar su ticket como **En preparación** o **Lista**, de manera independiente. **Mostrar listas recientes** muestra hasta las últimas 50 comandas listas además de las pendientes.
@@ -153,3 +153,8 @@ El comando valida integridad y crea una base separada, sin sobrescribir un desti
 ## Revisar el pedido desde el celular
 
 En **Nueva venta** aparece un botón fijo inferior **Ver pedido**, con cantidad de productos, mesa y total. Abre un resumen con nombres, cantidades e indicaciones para repetir la orden al cliente antes de enviarla. Desde ahí puedes cambiar indicaciones, seguir agregando o **Confirmar y enviar comanda**. El resumen no guarda por sí solo: debes confirmar el envío para conservar el pedido. **Ir a mesa y cobro** lleva al panel completo; las opciones de cobro siguen restringidas por rol.
+
+
+### Enviar comandas desde el resumen móvil
+
+En **Ver pedido** puedes seleccionar la mesa directamente y pulsar **Confirmar y enviar comanda**, incluso con la caja cerrada. Abrir caja sigue siendo obligatorio para cobrar. En el panel completo, el texto sobre **Guardar y enviar comanda** indica si faltan productos o seleccionar mesa; el botón deja de bloquearse por el estado de la caja. Los pedidos e indicaciones se conservan al abrir el panel completo.

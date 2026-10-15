@@ -423,9 +423,9 @@ class Handler(BaseHTTPRequestHandler):
                         returned.append({'id':pid,'quantity':qty})
                     log_adjustment(db,'return_stock',reason,notes,returned,now(),sale['table_name'] or 'Mostrador / para llevar',sale['production_order_id'],sale_id,0)
                 elif self.path in ('/api/sales', '/api/orders'):
-                    if not shift:
-                        raise ValueError('Abre la caja antes de cobrar.')
                     saving_order = self.path == '/api/orders'
+                    if not saving_order and not shift:
+                        raise ValueError('Abre la caja antes de cobrar.')
                     table_id = integer(body['table_id']) if body.get('table_id') else None
                     table = db.execute('SELECT * FROM dining_tables WHERE id=? AND active=1 AND removed=0',(table_id,)).fetchone() if table_id else None
                     if table_id and not table:

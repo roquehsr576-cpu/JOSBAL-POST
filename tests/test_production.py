@@ -35,9 +35,9 @@ class ProductionFlow(unittest.TestCase):
                 food=call('/api/products',{'name':'Hamburguesa','category':'Hamburguesas','price':'80','stock':10})['products'][0]['id']
                 products=call('/api/products',{'name':'Frappé','category':'Frappés','price':'60','stock':10})['products']
                 drink=next(p['id'] for p in products if p['name']=='Frappé')
-                call('/api/open',{'opening':'0'})
                 order={'table_id':table,'items':[{'id':food,'quantity':1,'notes':'Sin cebolla'},{'id':drink,'quantity':1,'notes':'Sin crema batida'}]}
                 state=call('/api/orders',order)
+                self.assertIsNone(state['shift'])
                 production_id=state['orders'][0]['production_order_id']
                 revision=state['orders'][0]['revision']
                 tickets=call('/api/production')['tickets']
@@ -74,6 +74,7 @@ class ProductionFlow(unittest.TestCase):
                 # Restart keeps the split tickets, instructions and independent states.
                 proc.terminate();proc.wait(timeout=3);proc=start()
                 self.assertEqual(call('/api/tickets/'+str(bar['id']))['status'],'ready')
+                call('/api/open',{'opening':'0'})
                 state=call('/api/sales',{**order,'order_revision':revision,'payment':'card'})
                 self.assertEqual(state['receipt']['total'],14000)
                 self.assertEqual(state['sales'][0]['production_order_id'],production_id)
