@@ -54,6 +54,14 @@ with connect() as db:
     for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'"), ('production_station', "TEXT NOT NULL DEFAULT 'auto'")]:
         if name not in columns:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
+    if 'retired' not in columns:
+        db.execute('ALTER TABLE products ADD COLUMN retired INTEGER NOT NULL DEFAULT 0')
+        # Retire only the duplicate explicitly identified by its name and stock.
+        # Keep its ID and historical records available for existing orders and sales.
+        duplicates = db.execute("SELECT id FROM products WHERE lower(name) IN ('hamburguesa clásica','hamburguesa clasica') AND menu_key IS NULL AND inventory_managed=1 AND stock=100").fetchall()
+        official = db.execute("SELECT 1 FROM products WHERE menu_key IS NOT NULL AND name='Hamburguesa clásica'").fetchone()
+        if len(duplicates)==1 and official:
+            db.execute('UPDATE products SET retired=1 WHERE id=?',(duplicates[0]['id'],))
     if 'notes' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
         db.execute("ALTER TABLE items ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
     if 'inventory_managed_at_sale' not in {r['name'] for r in db.execute('PRAGMA table_info(items)')}:
