@@ -25,3 +25,8 @@ context.notes='Sin cebolla, Sin chocolate, salsa aparte';
 const notes=JSON.parse(vm.runInContext("JSON.stringify(splitPreparationNotes(notes, preparationProfile({category:'Frappés'}).options))",context));
 assert.deepEqual(notes, {selected:['Sin chocolate'],other:'Sin cebolla, salsa aparte'});
 console.log('Opciones por categoría, configuración por producto e indicaciones previas: OK');
+
+assert.ok(profile({category:'Hamburguesas con papas'}).options.includes('Cambiar a papas gajo (+$7)'));
+assert.ok(!profile({category:'Hamburguesas'}).options.includes('Cambiar a papas gajo (+$7)'));
+assert.equal(vm.runInContext("unitPrice({category:'Hamburguesas con papas',price:10000},'Sin cebolla, Cambiar a papas gajo (+$7)')",context),10700);
+assert.equal(vm.runInContext("unitPrice({category:'Hamburguesas con papas',price:10000},'')",context),10000);

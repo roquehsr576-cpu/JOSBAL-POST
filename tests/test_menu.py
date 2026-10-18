@@ -80,6 +80,25 @@ class MenuImport(unittest.TestCase):
                 self.assertEqual(p['price'],4200)
                 self.assertEqual(p['preparation_profile'],'none')
                 self.assertEqual(len(state['sales']),1)
+                burger=next(p for p in state['products'] if p['name']=='Hamburguesa clásica con papas')
+                note='Sin cebolla, Cambiar a papas gajo (+$7)'
+                table=json.loads(call('/api/tables',{'name':'Mesa gajo'},True))['tables'][0]['id']
+                lines=[{'id':burger['id'],'quantity':2,'notes':note},{'id':burger['id'],'quantity':1,'notes':''}]
+                saved=json.loads(call('/api/orders',{'table_id':table,'items':lines},True))
+                pending=next(o for o in saved['orders'] if o['table_id']==table)
+                self.assertEqual(pending['items'][0]['notes'],note)
+                tickets=json.loads(call('/api/production',private=True))['tickets']
+                self.assertTrue(any(i['notes']==note for t in tickets for i in t['items']))
+                paid=json.loads(call('/api/sales',{'table_id':table,'order_revision':pending['revision'],'payment':'cash','received':'1000','items':lines},True))
+                expected=burger['price']*3+1400
+                self.assertEqual(paid['receipt']['total'],expected)
+                self.assertEqual(paid['receipt']['change'],100000-expected)
+                sold=next(s for s in paid['sales'] if s['id']==paid['receipt']['id'])
+                self.assertEqual([i['price'] for i in sold['items']],[burger['price']+700,burger['price']])
+                with self.assertRaises(HTTPError) as error:
+                    call('/api/sales',{'payment':'card','items':[{'id':p['id'],'quantity':1,'notes':note}]},True)
+                self.assertEqual(error.exception.code,400);error.exception.close()
+
                 self.assertEqual(state['products'][0]['inventory_managed'],0)
             finally:
                 proc.terminate();proc.wait(timeout=3)

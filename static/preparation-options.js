@@ -1,3 +1,5 @@
+const GAJO_OPTION = 'Cambiar a papas gajo (+$7)';
+function unitPrice(product,notes=''){return (product?.price||0)+(product?.category==='Hamburguesas con papas'&&notes.split(', ').includes(GAJO_OPTION)?700:0);}
 const PREPARATION_PROFILES = {
   burger: {title: 'Personaliza tu hamburguesa', options: ['Sin cebolla', 'Sin picante', 'Sin mostaza', 'Sin mayonesa', 'Sin cátsup'], placeholder: 'Ejemplo: sin tomate, salsas aparte…'},
   frappe: {title: 'Personaliza tu frappé', options: ['Sin azúcar añadida', 'Sin crema batida', 'Sin chocolate'], placeholder: 'Ejemplo: menos dulce, chocolate aparte…'},
@@ -14,7 +16,8 @@ function preparationProfile(product) {
       'Bebidas calientes': 'tea', 'Bebidas sobre las rocas': 'cold_drink'
     }[product.category] || 'none';
   }
-  return PREPARATION_PROFILES[key] || PREPARATION_PROFILES.none;
+  const profile=PREPARATION_PROFILES[key] || PREPARATION_PROFILES.none;
+  return product.category==='Hamburguesas con papas'?{...profile,options:[...profile.options,GAJO_OPTION]}:profile;
 }
 // Recognize only exact options; preserve previous instructions as free text.
 function splitPreparationNotes(notes, options) {

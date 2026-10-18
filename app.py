@@ -1,5 +1,6 @@
 import json
 import base64
+from product_pricing import unit_price
 import hmac
 import uuid
 import os
@@ -539,7 +540,8 @@ class Handler(BaseHTTPRequestHandler):
                         if not p or (p['inventory_managed'] and p['stock'] < qty):
                             raise ValueError('Stock insuficiente. Actualiza la venta.')
                         rows.append((p,qty))
-                        total += p['price']*qty
+                    products_by_id = {p['id']:p for p, qty in rows}
+                    total = sum(unit_price(products_by_id[pid],notes)*qty for pid,qty,notes in order_lines)
                     production_id = pending['production_order_id'] if pending else None
                     removed = removed_lines(json.loads(pending['items']),[{'id':pid,'quantity':qty,'notes':notes} for pid,qty,notes in order_lines]) if pending else []
                     if removed:
@@ -568,7 +570,7 @@ class Handler(BaseHTTPRequestHandler):
                     products_by_id = {p['id']:p for p, qty in rows}
                     for pid, qty, notes in order_lines:
                         p = products_by_id[pid]
-                        db.execute('INSERT INTO items(sale_id,product_id,name,quantity,price,notes,inventory_managed_at_sale) VALUES(?,?,?,?,?,?,?)',(sid,pid,p['name'],qty,p['price'],notes,p['inventory_managed']))
+                        db.execute('INSERT INTO items(sale_id,product_id,name,quantity,price,notes,inventory_managed_at_sale) VALUES(?,?,?,?,?,?,?)',(sid,pid,p['name'],qty,unit_price(p,notes),notes,p['inventory_managed']))
                     extra = {'receipt': {'id': sid, 'total':total, 'change':received-total}}
                 else:
                     self.reply(404, {'error':'No encontrado'})
