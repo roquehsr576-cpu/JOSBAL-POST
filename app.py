@@ -223,7 +223,7 @@ class Handler(BaseHTTPRequestHandler):
                 rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL AND retired=0 ORDER BY menu_key')
                 self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
             return
-        public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
+        public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/product-groups.js': 'product-groups.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
         image_manifest=ROOT/'catalog/product-images.json'
         if image_manifest.exists():
             public.update({item['url']:item['url'].lstrip('/') for item in json.loads(image_manifest.read_text())})
