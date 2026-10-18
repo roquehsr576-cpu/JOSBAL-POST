@@ -78,7 +78,7 @@ Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas ha
 
 ## Imágenes del menú
 
-Las 27 categorías de la carta incluyen imágenes ilustrativas generadas con estilo de fotografía natural. Se muestran en la carta pública y en la caja; cada producto utiliza la imagen representativa de su categoría, no una fotografía exacta de cada variante. El aviso de imágenes ilustrativas es visible en ambas vistas. Las imágenes se sirven desde el mismo servidor, sin enlaces externos. El archivo `static/images/menu-photos.png` contiene las imágenes en una cuadrícula uniforme y `static/food-images.js` asigna cada categoría a su imagen. Las categorías nuevas sin una ilustración asignada conservan el diseño de texto.
+La carta y la caja muestran 123 imágenes individuales con estilo de fotografía natural. Los tamaños chico y grande comparten imagen; los sabores y productos diferentes tienen su propia ilustración. Son imágenes ilustrativas, no fotos de los productos reales. La galería pública `/imagenes` permite buscar productos, abrir cada imagen y descargar los originales en 13 lotes ZIP. Los archivos se sirven desde el mismo servidor, sin enlaces externos. `catalog/product-images.json` asigna los productos a sus imágenes y `catalog/image-batches.json` define las descargas. Las categorías conservan una imagen representativa como alternativa para productos sin ilustración propia.
 
 
 ## Opciones de preparación según el producto

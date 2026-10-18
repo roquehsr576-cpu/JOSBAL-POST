@@ -1,0 +1,740 @@
+[
+  {
+    "name": "Chilaquiles",
+    "category": "Desayunos",
+    "url": "/images/products/01-chilaquiles-rojos-con-huevo-v1.png",
+    "description": "Chilaquiles rojos con huevo"
+  },
+  {
+    "name": "Entomatadas",
+    "category": "Desayunos",
+    "url": "/images/products/02-entomatadas-con-huevo-v1.png",
+    "description": "Entomatadas con huevo"
+  },
+  {
+    "name": "Enfrijoladas",
+    "category": "Desayunos",
+    "url": "/images/products/03-enfrijoladas-con-huevo-v1.png",
+    "description": "Enfrijoladas con huevo"
+  },
+  {
+    "name": "Omelette chila",
+    "category": "Huevos al gusto",
+    "url": "/images/products/04-omelette-chila-v1.png",
+    "description": "Omelette chila"
+  },
+  {
+    "name": "Huevos a la mexicana",
+    "category": "Huevos al gusto",
+    "url": "/images/products/05-huevos-a-la-mexicana-v1.png",
+    "description": "Huevos a la mexicana"
+  },
+  {
+    "name": "Huevos con jamón",
+    "category": "Huevos al gusto",
+    "url": "/images/products/06-huevos-con-jamon-v1.png",
+    "description": "Huevos con jamón"
+  },
+  {
+    "name": "Omelette de jamón y queso",
+    "category": "Huevos al gusto",
+    "url": "/images/products/07-omelette-jamon-y-queso-v1.png",
+    "description": "Omelette de jamón y queso"
+  },
+  {
+    "name": "Huevos con chorizo",
+    "category": "Huevos al gusto",
+    "url": "/images/products/08-huevos-con-chorizo-v1.png",
+    "description": "Huevos con chorizo"
+  },
+  {
+    "name": "Baguette clásico",
+    "category": "Baguettes",
+    "url": "/images/products/011-baguette-clasico-v1.png",
+    "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Baguette de milanesa",
+    "category": "Baguettes",
+    "url": "/images/products/09-baguette-milanesa-v1.png",
+    "description": "Baguette de milanesa"
+  },
+  {
+    "name": "Baguette de chorizo",
+    "category": "Baguettes",
+    "url": "/images/products/10-baguette-chorizo-v1.png",
+    "description": "Baguette de chorizo"
+  },
+  {
+    "name": "Baguette de tasajo",
+    "category": "Baguettes",
+    "url": "/images/products/012-baguette-de-tasajo-v1.png",
+    "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Bague-pizza 3 quesos",
+    "category": "Bague-pizza",
+    "url": "/images/products/013-bague-pizza-3-quesos-v1.png",
+    "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Bague-pizza hawaiano",
+    "category": "Bague-pizza",
+    "url": "/images/products/014-bague-pizza-hawaiano-v1.png",
+    "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Bague-pizza de chorizo",
+    "category": "Bague-pizza",
+    "url": "/images/products/015-bague-pizza-de-chorizo-v1.png",
+    "description": "Mayonesa, aguacate, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Croissant de jamón y queso",
+    "category": "Croissants salados",
+    "url": "/images/products/016-croissant-de-jamon-y-queso-v1.png",
+    "description": "Cuernito de mantequilla relleno de jamón. Mayonesa, aguacate, lechuga, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Croissant de milanesa",
+    "category": "Croissants salados",
+    "url": "/images/products/017-croissant-de-milanesa-v1.png",
+    "description": "Cuernito de mantequilla relleno de milanesa. Mayonesa, aguacate, lechuga, tomate, queso gratinado y chiles en vinagre. Acompañado de ensalada o papas naturales."
+  },
+  {
+    "name": "Ensalada de atún",
+    "category": "Algo sano",
+    "url": "/images/products/018-ensalada-de-atun-v1.png",
+    "description": "Atún preparado, lechuga, pepino, zanahoria y aguacate; chiles en vinagre y totopos."
+  },
+  {
+    "name": "Papas a la francesa",
+    "category": "Para acompañar",
+    "url": "/images/products/019-papas-a-la-francesa-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Papas gajo",
+    "category": "Para acompañar",
+    "url": "/images/products/020-papas-gajo-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Salchipapas",
+    "category": "Para acompañar",
+    "url": "/images/products/021-salchipapas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Alitas · 6 piezas",
+    "category": "Alitas",
+    "url": "/images/products/022-alitas-6-piezas-v1.png",
+    "description": "Salsa a elegir: Ret Hot, BBQ o mango habanero."
+  },
+  {
+    "name": "Alitas · 10 piezas",
+    "category": "Alitas",
+    "url": "/images/products/023-alitas-10-piezas-v1.png",
+    "description": "Salsa a elegir: Ret Hot, BBQ o mango habanero."
+  },
+  {
+    "name": "Hamburguesa clásica",
+    "category": "Hamburguesas",
+    "url": "/images/products/024-hamburguesa-clasica-v1.png",
+    "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hamburguesa hawaiana",
+    "category": "Hamburguesas",
+    "url": "/images/products/025-hamburguesa-hawaiana-v1.png",
+    "description": "Con piña. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hamburguesa de quesillo",
+    "category": "Hamburguesas",
+    "url": "/images/products/026-hamburguesa-de-quesillo-v1.png",
+    "description": "Doble porción de quesillo. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Salchiburger",
+    "category": "Hamburguesas",
+    "url": "/images/products/027-salchiburger-v1.png",
+    "description": "Con salchicha. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hamburguesa 3 quesos",
+    "category": "Hamburguesas",
+    "url": "/images/products/028-hamburguesa-3-quesos-v1.png",
+    "description": "Combinación de tres quesos, carne de res, jamón, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hamburguesa doble carne",
+    "category": "Hamburguesas",
+    "url": "/images/products/029-hamburguesa-doble-carne-v1.png",
+    "description": "Doble porción de carne de res. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hamburguesa clásica con papas",
+    "category": "Hamburguesas con papas",
+    "url": "/images/products/030-hamburguesa-clasica-con-papas-v1.png",
+    "description": "Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada SOLO de papas a la francesa naturales."
+  },
+  {
+    "name": "Hamburguesa hawaiana con papas",
+    "category": "Hamburguesas con papas",
+    "url": "/images/products/031-hamburguesa-hawaiana-con-papas-v1.png",
+    "description": "Con piña. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada SOLO de papas a la francesa naturales."
+  },
+  {
+    "name": "Hamburguesa de quesillo con papas",
+    "category": "Hamburguesas con papas",
+    "url": "/images/products/032-hamburguesa-de-quesillo-con-papas-v1.png",
+    "description": "Doble porción de quesillo. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada SOLO de papas a la francesa naturales."
+  },
+  {
+    "name": "Hamburguesa con salchicha con papas",
+    "category": "Hamburguesas con papas",
+    "url": "/images/products/033-hamburguesa-con-salchicha-con-papas-v1.png",
+    "description": "Con salchicha. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada SOLO de papas a la francesa naturales."
+  },
+  {
+    "name": "Hamburguesa 3 quesos con papas",
+    "category": "Hamburguesas con papas",
+    "url": "/images/products/034-hamburguesa-3-quesos-con-papas-v1.png",
+    "description": "Combinación de tres quesos, carne de res, jamón, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada SOLO de papas a la francesa naturales."
+  },
+  {
+    "name": "Hamburguesa doble carne con papas",
+    "category": "Hamburguesas con papas",
+    "url": "/images/products/035-hamburguesa-doble-carne-con-papas-v1.png",
+    "description": "Doble porción de carne de res. Carne de res, jamón, queso amarillo, quesillo, lechuga, tomate, cebolla, chiles, cátsup, mayonesa y mostaza. Acompañada SOLO de papas a la francesa naturales."
+  },
+  {
+    "name": "Hot dog clásico",
+    "category": "Hot dogs",
+    "url": "/images/products/036-hot-dog-clasico-v1.png",
+    "description": "Salchicha de pavo, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hot dog de quesillo",
+    "category": "Hot dogs",
+    "url": "/images/products/037-hot-dog-de-quesillo-v1.png",
+    "description": "Salchicha de pavo envuelta en quesillo, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Hot dog hawaiano",
+    "category": "Hot dogs",
+    "url": "/images/products/038-hot-dog-hawaiano-v1.png",
+    "description": "Salchicha de pavo, jamón, queso amarillo, piña, tomate, cebolla, chiles, cátsup, mayonesa y mostaza."
+  },
+  {
+    "name": "Combo amigos",
+    "category": "Combos",
+    "url": "/images/products/039-combo-amigos-v1.png",
+    "description": "2 hamburguesas clásicas + 1 orden de papas a la francesa + 2 jugos o 2 refrescos de lata."
+  },
+  {
+    "name": "Combo hamburguesas",
+    "category": "Combos",
+    "url": "/images/products/040-combo-hamburguesas-v1.png",
+    "description": "2 hamburguesas clásicas."
+  },
+  {
+    "name": "Combo hot dog",
+    "category": "Combos",
+    "url": "/images/products/041-combo-hot-dog-v1.png",
+    "description": "3 hot dogs clásicos."
+  },
+  {
+    "name": "Espresso",
+    "category": "Bebidas calientes",
+    "url": "/images/products/042-espresso-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Affogato",
+    "category": "Bebidas calientes",
+    "url": "/images/products/043-affogato-v1.png",
+    "description": "Helado de vainilla con espresso."
+  },
+  {
+    "name": "Americano",
+    "category": "Bebidas calientes",
+    "url": "/images/products/044-americano-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Capuchino",
+    "category": "Bebidas calientes",
+    "url": "/images/products/045-capuchino-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Latte",
+    "category": "Bebidas calientes",
+    "url": "/images/products/046-latte-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Moka",
+    "category": "Bebidas calientes",
+    "url": "/images/products/047-moka-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Moka blanco",
+    "category": "Bebidas calientes",
+    "url": "/images/products/048-moka-blanco-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Latte caramel",
+    "category": "Bebidas calientes",
+    "url": "/images/products/049-latte-caramel-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Taro caliente",
+    "category": "Bebidas calientes",
+    "url": "/images/products/050-taro-caliente-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Matcha caliente",
+    "category": "Bebidas calientes",
+    "url": "/images/products/051-matcha-caliente-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Horchata caliente",
+    "category": "Bebidas calientes",
+    "url": "/images/products/052-horchata-caliente-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Chocolate de agua",
+    "category": "Bebidas calientes",
+    "url": "/images/products/053-chocolate-de-agua-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Chocolate de leche",
+    "category": "Bebidas calientes",
+    "url": "/images/products/054-chocolate-de-leche-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Tizana Frutos reales",
+    "category": "Tizanas calientes",
+    "url": "/images/products/055-tizana-frutos-reales-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Tizana Berri delicious",
+    "category": "Tizanas calientes",
+    "url": "/images/products/056-tizana-berri-delicious-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Tizana Frutos rojos",
+    "category": "Tizanas calientes",
+    "url": "/images/products/057-tizana-frutos-rojos-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Té de Manzanilla",
+    "category": "Tés",
+    "url": "/images/products/058-te-de-manzanilla-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Té de Limón",
+    "category": "Tés",
+    "url": "/images/products/059-te-de-limon-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Té de Hierbabuena",
+    "category": "Tés",
+    "url": "/images/products/060-te-de-hierbabuena-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Té de Canela a la manzana",
+    "category": "Tés",
+    "url": "/images/products/061-te-de-canela-a-la-manzana-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Limonada de sandía",
+    "category": "Refrescantes",
+    "url": "/images/products/062-limonada-de-sandia-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Limonada",
+    "category": "Refrescantes",
+    "url": "/images/products/063-limonada-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Naranjada",
+    "category": "Refrescantes",
+    "url": "/images/products/064-naranjada-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Chocomilk",
+    "category": "Refrescantes",
+    "url": "/images/products/065-chocomilk-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Refrescos",
+    "category": "Refrescantes",
+    "url": "/images/products/066-refrescos-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Chamoyada de mora azul",
+    "category": "Chamoyadas",
+    "url": "/images/products/067-chamoyada-de-mora-azul-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Chamoyada de manzana verde",
+    "category": "Chamoyadas",
+    "url": "/images/products/068-chamoyada-de-manzana-verde-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Chamoyada de sandía",
+    "category": "Chamoyadas",
+    "url": "/images/products/069-chamoyada-de-sandia-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Americano sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/070-americano-sobre-rocas-v1.png",
+    "description": "No lleva dulce."
+  },
+  {
+    "name": "Latte sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/071-latte-sobre-rocas-v1.png",
+    "description": "No lleva dulce."
+  },
+  {
+    "name": "Moka sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/072-moka-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Blanco sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/073-blanco-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Caramelo sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/074-caramelo-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Taro sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/075-taro-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Matcha sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/076-matcha-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Horchata sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/077-horchata-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Tizana sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/078-tizana-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Té sobre rocas",
+    "category": "Bebidas sobre las rocas",
+    "url": "/images/products/079-te-sobre-rocas-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Soda italiana · Manzana verde",
+    "category": "Sodas italianas",
+    "url": "/images/products/080-soda-italiana-manzana-verde-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Soda italiana · Mora azul",
+    "category": "Sodas italianas",
+    "url": "/images/products/081-soda-italiana-mora-azul-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Soda italiana · Sandía",
+    "category": "Sodas italianas",
+    "url": "/images/products/082-soda-italiana-sandia-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Soda italiana · Piña",
+    "category": "Sodas italianas",
+    "url": "/images/products/083-soda-italiana-pina-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Soda italiana · Maracuyá",
+    "category": "Sodas italianas",
+    "url": "/images/products/084-soda-italiana-maracuya-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Soda italiana · Frutos rojos",
+    "category": "Sodas italianas",
+    "url": "/images/products/085-soda-italiana-frutos-rojos-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé café",
+    "category": "Frappés",
+    "url": "/images/products/086-frappe-cafe-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé moka",
+    "category": "Frappés",
+    "url": "/images/products/087-frappe-moka-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé frapuchino Oreo",
+    "category": "Frappés",
+    "url": "/images/products/088-frappe-frapuchino-oreo-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé Oreo",
+    "category": "Frappés",
+    "url": "/images/products/089-frappe-oreo-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé mazapán",
+    "category": "Frappés",
+    "url": "/images/products/090-frappe-mazapan-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé fresas con crema",
+    "category": "Frappés",
+    "url": "/images/products/091-frappe-fresas-con-crema-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé taro",
+    "category": "Frappés",
+    "url": "/images/products/092-frappe-taro-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé matcha",
+    "category": "Frappés",
+    "url": "/images/products/093-frappe-matcha-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé horchata",
+    "category": "Frappés",
+    "url": "/images/products/094-frappe-horchata-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé pay de limón",
+    "category": "Frappés",
+    "url": "/images/products/095-frappe-pay-de-limon-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Frappé Ferrero",
+    "category": "Frappés",
+    "url": "/images/products/096-frappe-ferrero-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Malteada de vainilla",
+    "category": "Malteadas",
+    "url": "/images/products/097-malteada-de-vainilla-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Malteada de fresa",
+    "category": "Malteadas",
+    "url": "/images/products/098-malteada-de-fresa-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Malteada de Oreo",
+    "category": "Malteadas",
+    "url": "/images/products/099-malteada-de-oreo-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Smoothie de frutos rojos",
+    "category": "Smoothies",
+    "url": "/images/products/100-smoothie-de-frutos-rojos-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Smoothie de mango",
+    "category": "Smoothies",
+    "url": "/images/products/101-smoothie-de-mango-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Smoothie de piña",
+    "category": "Smoothies",
+    "url": "/images/products/102-smoothie-de-pina-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Carlota",
+    "category": "Pasteles",
+    "url": "/images/products/103-carlota-v1.png",
+    "description": "Pregunta por nuestros postres del día."
+  },
+  {
+    "name": "Cheesecake de zarzamora",
+    "category": "Pasteles",
+    "url": "/images/products/104-cheesecake-de-zarzamora-v1.png",
+    "description": "Pregunta por nuestros postres del día."
+  },
+  {
+    "name": "Chocoflán",
+    "category": "Pasteles",
+    "url": "/images/products/105-chocoflan-v1.png",
+    "description": "Pregunta por nuestros postres del día."
+  },
+  {
+    "name": "Pastel capuchino",
+    "category": "Pasteles",
+    "url": "/images/products/106-pastel-capuchino-v1.png",
+    "description": "Pregunta por nuestros postres del día."
+  },
+  {
+    "name": "Croissant de Nutella",
+    "category": "Croissants dulces",
+    "url": "/images/products/107-croissant-de-nutella-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Croissant de Philadelphia y mermelada",
+    "category": "Croissants dulces",
+    "url": "/images/products/108-croissant-de-philadelphia-y-mermelada-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Croissant de Philadelphia y Nutella",
+    "category": "Croissants dulces",
+    "url": "/images/products/109-croissant-de-philadelphia-y-nutella-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Croissant de Nutella y plátano",
+    "category": "Croissants dulces",
+    "url": "/images/products/110-croissant-de-nutella-y-platano-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Croissant de Nutella y fresa",
+    "category": "Croissants dulces",
+    "url": "/images/products/111-croissant-de-nutella-y-fresa-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Croissant de Nutella, Philadelphia, plátano y fresa",
+    "category": "Croissants dulces",
+    "url": "/images/products/112-croissant-de-nutella-philadelphia-platano-y-fresa-v1.png",
+    "description": ""
+  },
+  {
+    "name": "Crepa clásica",
+    "category": "Crepas dulces",
+    "url": "/images/products/113-crepa-clasica-v1.png",
+    "description": "Un ingrediente a elegir. Decorada con chocolate, crema batida y cheesecake."
+  },
+  {
+    "name": "Crepa Josbal",
+    "category": "Crepas dulces",
+    "url": "/images/products/114-crepa-josbal-v1.png",
+    "description": "Nutella, Philadelphia y plátano. Decorada con chocolate, crema batida y cheesecake."
+  },
+  {
+    "name": "Crepa imperial",
+    "category": "Crepas dulces",
+    "url": "/images/products/115-crepa-imperial-v1.png",
+    "description": "Nutella, Philadelphia y fresa. Decorada con chocolate, crema batida y cheesecake."
+  },
+  {
+    "name": "Crepa Oreo",
+    "category": "Crepas dulces",
+    "url": "/images/products/116-crepa-oreo-v1.png",
+    "description": "Nutella, Philadelphia y Oreo. Decorada con chocolate, crema batida y cheesecake."
+  },
+  {
+    "name": "Crepa dulce placer",
+    "category": "Crepas dulces",
+    "url": "/images/products/117-crepa-dulce-placer-v1.png",
+    "description": "Fresa, lechera y helado. Decorada con chocolate, crema batida y cheesecake."
+  },
+  {
+    "name": "Crepa especial",
+    "category": "Crepas dulces",
+    "url": "/images/products/118-crepa-especial-v1.png",
+    "description": "Arma tu crepa con tres sabores diferentes. Decorada con chocolate, crema batida y cheesecake."
+  },
+  {
+    "name": "Waffle tradicional",
+    "category": "Waffles",
+    "url": "/images/products/119-waffle-tradicional-v1.png",
+    "description": "Plátano acompañado de lechera o maple."
+  },
+  {
+    "name": "Waffle de fresa",
+    "category": "Waffles",
+    "url": "/images/products/120-waffle-de-fresa-v1.png",
+    "description": "Fresa acompañada de lechera o maple."
+  },
+  {
+    "name": "Waffle Josbal",
+    "category": "Waffles",
+    "url": "/images/products/121-waffle-josbal-v1.png",
+    "description": "Nutella, Philadelphia y plátano."
+  },
+  {
+    "name": "Waffle imperial",
+    "category": "Waffles",
+    "url": "/images/products/122-waffle-imperial-v1.png",
+    "description": "Nutella, Philadelphia y fresa."
+  },
+  {
+    "name": "Waffle Oreo",
+    "category": "Waffles",
+    "url": "/images/products/123-waffle-oreo-v1.png",
+    "description": "Nutella, Philadelphia y Oreo."
+  }
+]

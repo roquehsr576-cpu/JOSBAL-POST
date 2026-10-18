@@ -53,8 +53,13 @@ class MenuImport(unittest.TestCase):
                 self.assertTrue(call('/images/menu-photos.png').startswith(b'\x89PNG\r\n\x1a\n'))
                 self.assertIn(b'background-size:400% 700%',call('/food-images.css'))
                 self.assertIn(b'Alitas',call('/food-images.js'))
-                self.assertIn(b'Primer lote',call('/imagenes'))
+                self.assertIn('Imágenes individuales del menú'.encode(),call('/imagenes'))
                 self.assertTrue(call('/images/products/01-chilaquiles-rojos-con-huevo-v1.png').startswith(b'\x89PNG\r\n\x1a\n'))
+                # Downloads are real ZIP files generated from the same image allowlist.
+                import io,zipfile
+                with zipfile.ZipFile(io.BytesIO(call('/imagenes/descargar?lote=1'))) as archive:
+                    self.assertEqual(sum(name.endswith('.png') for name in archive.namelist()),10)
+                    self.assertIsNone(archive.testzip())
                 self.assertTrue(call('/menu.pdf').startswith(b'%PDF'))
                 with self.assertRaises(HTTPError) as error:call('/api/state')
                 self.assertEqual(error.exception.code,401);error.exception.close()

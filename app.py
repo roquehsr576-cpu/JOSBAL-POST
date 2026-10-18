@@ -4,6 +4,9 @@ import hmac
 import uuid
 import os
 import hashlib
+import tempfile
+import zipfile
+import shutil
 from http.cookies import SimpleCookie
 import sqlite3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -203,9 +206,29 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
             return
         public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
-        public.update({'/images/products/01-chilaquiles-rojos-con-huevo-v1.png': 'images/products/01-chilaquiles-rojos-con-huevo-v1.png', '/images/products/02-entomatadas-con-huevo-v1.png': 'images/products/02-entomatadas-con-huevo-v1.png', '/images/products/03-enfrijoladas-con-huevo-v1.png': 'images/products/03-enfrijoladas-con-huevo-v1.png', '/images/products/04-omelette-chila-v1.png': 'images/products/04-omelette-chila-v1.png', '/images/products/05-huevos-a-la-mexicana-v1.png': 'images/products/05-huevos-a-la-mexicana-v1.png', '/images/products/06-huevos-con-jamon-v1.png': 'images/products/06-huevos-con-jamon-v1.png', '/images/products/07-omelette-jamon-y-queso-v1.png': 'images/products/07-omelette-jamon-y-queso-v1.png', '/images/products/08-huevos-con-chorizo-v1.png': 'images/products/08-huevos-con-chorizo-v1.png', '/images/products/09-baguette-milanesa-v1.png': 'images/products/09-baguette-milanesa-v1.png', '/images/products/10-baguette-chorizo-v1.png': 'images/products/10-baguette-chorizo-v1.png'})
+        image_manifest=ROOT/'catalog/product-images.json'
+        if image_manifest.exists():
+            public.update({item['url']:item['url'].lstrip('/') for item in json.loads(image_manifest.read_text())})
         public['/imagenes']='image-gallery.html'
         public['/imagenes/lote-01.zip']='images/josbal-lote-01.zip'
+        if urlsplit(self.path).path=='/imagenes/descargar':
+            try:
+                batch=integer(parse_qs(urlsplit(self.path).query).get('lote',['0'])[0])
+                groups=json.loads((ROOT/'catalog/image-batches.json').read_text())
+                if not 1<=batch<=len(groups):raise ValueError('Lote no encontrado.')
+                with tempfile.SpooledTemporaryFile(max_size=8*1024*1024) as output:
+                    with zipfile.ZipFile(output,'w',zipfile.ZIP_STORED) as archive:
+                        for url in groups[batch-1]:
+                            relative=public.get(url)
+                            if not relative:raise ValueError('Imagen no disponible.')
+                            archive.write(ROOT/'static'/relative,Path(relative).name)
+                    length=output.tell();output.seek(0)
+                    self.send_response(200);self.send_header('Content-Type','application/zip')
+                    self.send_header('Content-Disposition',f'attachment; filename="josbal-lote-{batch:02}.zip"')
+                    self.send_header('Content-Length',str(length));self.end_headers()
+                    shutil.copyfileobj(output,self.wfile,length=65536)
+            except (ValueError,IndexError):self.reply(404,{'error':'Lote no encontrado.'})
+            return
         if self.path in public:
             file = ROOT / 'static' / public[self.path]
             raw = file.read_bytes()
