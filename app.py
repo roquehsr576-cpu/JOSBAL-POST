@@ -441,7 +441,7 @@ class Handler(BaseHTTPRequestHandler):
                     description = str(body.get('description', '')).strip()[:2000]
                     managed = 0 if str(body.get('inventory_managed', '1')) == '0' else 1
                     profile = body.get('preparation_profile', 'auto')
-                    if profile not in ('auto','burger','frappe','tea','cold_drink','none'):
+                    if profile not in ('auto','burger','hotdog','frappe','tea','cold_drink','none'):
                         raise ValueError('Selecciona un grupo de opciones de preparación válido.')
                     station = body.get('production_station', 'auto')
                     if station not in ('auto','kitchen','bar'):

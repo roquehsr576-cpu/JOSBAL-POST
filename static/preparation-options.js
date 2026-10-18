@@ -1,6 +1,7 @@
 const GAJO_OPTION = 'Cambiar a papas gajo (+$7)';
 function unitPrice(product,notes=''){return (product?.price||0)+(product?.category==='Hamburguesas con papas'&&notes.split(', ').includes(GAJO_OPTION)?700:0);}
 const PREPARATION_PROFILES = {
+  hotdog: {title: 'Personaliza tu hot dog', options: ['Sin cebolla', 'Sin tomate', 'Sin mostaza', 'Sin mayonesa', 'Sin picante'], placeholder: 'Ejemplo: salsas aparte…'},
   burger: {title: 'Personaliza tu hamburguesa', options: ['Sin cebolla', 'Sin picante', 'Sin mostaza', 'Sin mayonesa', 'Sin cátsup'], placeholder: 'Ejemplo: sin tomate, salsas aparte…'},
   frappe: {title: 'Personaliza tu frappé', options: ['Sin azúcar añadida', 'Sin crema batida', 'Sin chocolate'], placeholder: 'Ejemplo: menos dulce, chocolate aparte…'},
   tea: {title: 'Personaliza tu bebida', options: ['Sin azúcar añadida'], placeholder: 'Ejemplo: sin endulzante, menos caliente…'},
@@ -11,10 +12,10 @@ function preparationProfile(product) {
   let key = product.preparation_profile || 'auto';
   if (key === 'auto') {
     key = {
-      'Hamburguesas': 'burger', 'Hamburguesas con papas': 'burger',
+      'Hot dogs': 'hotdog', 'Hamburguesas': 'burger', 'Hamburguesas con papas': 'burger',
       'Frappés': 'frappe', 'Tizanas calientes': 'tea', 'Tés': 'tea',
       'Bebidas calientes': 'tea', 'Bebidas sobre las rocas': 'cold_drink'
-    }[product.category] || 'none';
+    }[product.category] || (product.category==='Combos'&&/^combo hot dog$/i.test(product.name||'')?'hotdog':'none');
   }
   const profile=PREPARATION_PROFILES[key] || PREPARATION_PROFILES.none;
   return product.category==='Hamburguesas con papas'?{...profile,options:[...profile.options,GAJO_OPTION]}:profile;
