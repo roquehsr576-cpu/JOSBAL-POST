@@ -126,7 +126,7 @@ def snapshot(db):
 
 class Handler(BaseHTTPRequestHandler):
     def end_headers(self):
-        self.send_header('Cache-Control', 'no-store')
+        self.send_header('Cache-Control', 'public, max-age=604800' if self.path.startswith('/images/products/') else 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('X-Frame-Options', 'DENY')
         self.send_header('Referrer-Policy', 'no-referrer')
@@ -203,11 +203,14 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
             return
         public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
+        public.update({'/images/products/01-chilaquiles-rojos-con-huevo-v1.png': 'images/products/01-chilaquiles-rojos-con-huevo-v1.png', '/images/products/02-entomatadas-con-huevo-v1.png': 'images/products/02-entomatadas-con-huevo-v1.png', '/images/products/03-enfrijoladas-con-huevo-v1.png': 'images/products/03-enfrijoladas-con-huevo-v1.png', '/images/products/04-omelette-chila-v1.png': 'images/products/04-omelette-chila-v1.png', '/images/products/05-huevos-a-la-mexicana-v1.png': 'images/products/05-huevos-a-la-mexicana-v1.png', '/images/products/06-huevos-con-jamon-v1.png': 'images/products/06-huevos-con-jamon-v1.png', '/images/products/07-omelette-jamon-y-queso-v1.png': 'images/products/07-omelette-jamon-y-queso-v1.png', '/images/products/08-huevos-con-chorizo-v1.png': 'images/products/08-huevos-con-chorizo-v1.png', '/images/products/09-baguette-milanesa-v1.png': 'images/products/09-baguette-milanesa-v1.png', '/images/products/10-baguette-chorizo-v1.png': 'images/products/10-baguette-chorizo-v1.png'})
+        public['/imagenes']='image-gallery.html'
+        public['/imagenes/lote-01.zip']='images/josbal-lote-01.zip'
         if self.path in public:
             file = ROOT / 'static' / public[self.path]
             raw = file.read_bytes()
             self.send_response(200)
-            self.send_header('Content-Type', {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.pdf':'application/pdf','.png':'image/png'}[file.suffix])
+            self.send_header('Content-Type', {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.pdf':'application/pdf','.png':'image/png','.zip':'application/zip'}[file.suffix])
             self.send_header('Content-Length', str(len(raw)))
             self.end_headers()
             self.wfile.write(raw)

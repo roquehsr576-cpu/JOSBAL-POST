@@ -53,6 +53,8 @@ class MenuImport(unittest.TestCase):
                 self.assertTrue(call('/images/menu-photos.png').startswith(b'\x89PNG\r\n\x1a\n'))
                 self.assertIn(b'background-size:400% 700%',call('/food-images.css'))
                 self.assertIn(b'Alitas',call('/food-images.js'))
+                self.assertIn(b'Primer lote',call('/imagenes'))
+                self.assertTrue(call('/images/products/01-chilaquiles-rojos-con-huevo-v1.png').startswith(b'\x89PNG\r\n\x1a\n'))
                 self.assertTrue(call('/menu.pdf').startswith(b'%PDF'))
                 with self.assertRaises(HTTPError) as error:call('/api/state')
                 self.assertEqual(error.exception.code,401);error.exception.close()
