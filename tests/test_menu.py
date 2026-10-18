@@ -42,8 +42,10 @@ class MenuImport(unittest.TestCase):
             proc=start()
             try:
                 menu=json.loads(call('/api/menu'))['items']
-                self.assertEqual(len(menu),158)
-                self.assertEqual(len({p['category'] for p in menu}),27)
+                self.assertEqual(len(menu),157)
+                self.assertEqual(len({p['category'] for p in menu}),26)
+                self.assertEqual(next(p for p in menu if p['name']=='Papas gajo')['price'],8000)
+                self.assertNotIn('Cambio a papas gajo',[p['name'] for p in menu])
                 self.assertTrue(all(set(p)=={'name','price','category','description'} for p in menu))
                 self.assertNotIn('Producto existente',[p['name'] for p in menu])
                 page=call('/menu')

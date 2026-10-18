@@ -91,6 +91,15 @@ with connect() as db:
         for item in menu['items']:
             db.execute('INSERT OR IGNORE INTO products(name,price,stock,category,description,inventory_managed,menu_key) VALUES(?,?,0,?,?,0,?)', (item['name'],item['price'],item['category'],item['description'],item['key']))
 
+
+    # One-time correction: the standalone side and burger substitution are distinct.
+    db.execute('CREATE TABLE IF NOT EXISTS app_migrations(name TEXT PRIMARY KEY)')
+    if not db.execute("SELECT 1 FROM app_migrations WHERE name='gajo-side-and-burger-option-v1'").fetchone():
+        db.execute("UPDATE products SET price=8000 WHERE menu_key='pdf-v1-020' OR name='Papas gajo'")
+        db.execute("UPDATE products SET retired=1 WHERE menu_key='pdf-v1-036' OR name='Cambio a papas gajo'")
+        db.execute("UPDATE products SET description=replace(description,'Por $5 más, cambia a papas gajo.','Por $7 más, cambia a papas gajo.') WHERE category='Hamburguesas con papas'")
+        db.execute("INSERT INTO app_migrations VALUES('gajo-side-and-burger-option-v1')")
+
 def money(value):
     from decimal import Decimal, InvalidOperation
     try:
@@ -211,7 +220,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == '/api/menu':
             with connect() as db:
-                rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL ORDER BY menu_key')
+                rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL AND retired=0 ORDER BY menu_key')
                 self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
             return
         public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
