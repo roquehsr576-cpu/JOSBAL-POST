@@ -14,6 +14,7 @@ Desde una computadora local, abre `http://127.0.0.1:8000`. En el entorno de onbo
 1. En **Productos**, agrega nombres, precios en MXN y existencias.
 2. En **Caja**, registra el fondo inicial.
 3. En **Nueva venta**, selecciona productos y cobra en efectivo o registra un pago con tarjeta realizado en una terminal externa.
+   El catálogo aparece agrupado por categoría (Desayunos, Huevos al gusto, Baguettes… hasta Waffles) en el mismo orden de la carta; los productos agregados a mano quedan al final de su categoría.
 4. En **Caja**, registra el efectivo contado para conocer la diferencia del cierre.
 
 Las ventas y el inventario se guardan en `data/josbal.sqlite3`. Los importes usan centavos enteros y cada venta se guarda en una transacción que descuenta existencias. El historial muestra las últimas 30 ventas.
@@ -74,6 +75,7 @@ Los pedidos guardados sobreviven a reinicios y no se contabilizan como ventas ha
 - **Cancelar un pedido pendiente:** en la mesa, pulsa **Cancelar pedido de la mesa** y elige el motivo. Cocina y Barra reciben el aviso de no preparar lo que siga pendiente.
 - **Cancelar una venta cobrada:** en **Historial → Ver detalle**, pulsa **Cancelar venta**. Solo aplica a ventas del turno de caja abierto. La venta queda en el historial marcada como **CANCELADA**, se descuenta del corte de caja sin devolver existencias automáticamente. La devolución del dinero se entrega en efectivo o en la terminal de tarjeta por separado.
 - Motivos disponibles: cliente cambió de opinión, error al tomar el pedido, producto agotado, demora en el servicio, problema de calidad u otro (con descripción obligatoria). Puedes agregar detalles en todos los casos.
+- En **Cocina** y **Barra**, una comanda con cambio se resalta en **naranja** (“⚠ CAMBIO EN LA COMANDA”) con lo que hay que **agregar** y lo que hay que **quitar**; una comanda cancelada se resalta en **rojo** (“✕ CANCELADO · NO PREPARAR”). El color se mantiene hasta marcarla como lista. En el ticket impreso el aviso sale con un encabezado negro para distinguirlo en papel térmico.
 - **Cambios** muestra los últimos 200 registros con fecha, mesa, venta, comanda, productos, importe y motivo, y un resumen por motivo para detectar qué mejorar. Los registros no se pueden borrar desde la aplicación.
 
 ## Imágenes del menú

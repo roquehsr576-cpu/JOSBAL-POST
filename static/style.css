@@ -19,3 +19,6 @@
 .history-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.history-tools label{margin:0;min-width:180px}.history-tools button{min-height:44px}
 
 .size-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.size-options button{flex:1;padding:10px 8px;min-height:44px;font:inherit;font-size:13px}div.product{cursor:default}
+.catalog-heading{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:18px 0 0;padding-bottom:8px;border-bottom:2px solid #e4e9ef;font-size:17px;color:#112b32}
+.catalog-heading:first-child{margin-top:0}
+.catalog-heading span{font-size:12px;font-weight:700;color:#158666;background:#e8f6f0;border-radius:20px;padding:2px 9px}
