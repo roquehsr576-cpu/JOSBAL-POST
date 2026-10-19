@@ -14,6 +14,7 @@ Desde una computadora local, abre `http://127.0.0.1:8000`. En el entorno de onbo
 1. En **Productos**, agrega nombres, precios en MXN y existencias.
 2. En **Caja**, registra el fondo inicial.
 3. En **Nueva venta**, selecciona productos y cobra en efectivo o registra un pago con tarjeta realizado en una terminal externa.
+   El catálogo aparece agrupado por categoría (Desayunos, Huevos al gusto, Baguettes… hasta Waffles) en el mismo orden de la carta; los productos agregados a mano quedan al final de su categoría.
 4. En **Caja**, registra el efectivo contado para conocer la diferencia del cierre.
 
 Las ventas y el inventario se guardan en `data/josbal.sqlite3`. Los importes usan centavos enteros y cada venta se guarda en una transacción que descuenta existencias. El historial muestra las últimas 30 ventas.
