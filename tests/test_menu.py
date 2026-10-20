@@ -71,7 +71,7 @@ class MenuImport(unittest.TestCase):
                 p=next(p for p in state['products'] if p['name']=='Americano · Grande')
                 self.assertEqual(p['price'],4000)
                 call('/api/open',{'opening':'0'},True)
-                sale=json.loads(call('/api/sales',{'payment':'card','items':[{'id':p['id'],'quantity':2}]},True))
+                sale=json.loads(call('/api/sales',{'payment':'card','items':[{'id':p['id'],'quantity':2,'notes':'Media carga'}]},True))
                 self.assertEqual(sale['receipt']['total'],8000)
                 call('/api/products',{'id':p['id'],'name':p['name'],'price':'42','stock':0,'category':p['category'],'description':p['description'],'inventory_managed':0,'preparation_profile':'none'},True)
                 proc.terminate();proc.wait(timeout=3)
@@ -82,6 +82,9 @@ class MenuImport(unittest.TestCase):
                 self.assertEqual(p['price'],4200)
                 self.assertEqual(p['preparation_profile'],'none')
                 self.assertEqual(len(state['sales']),1)
+                self.assertEqual(state['sales'][0]['items'][0]['notes'],'Media carga')
+                coffee_tickets=json.loads(call('/api/production',private=True))['tickets']
+                self.assertTrue(any(i['notes']=='Media carga' for t in coffee_tickets for i in t['items']))
                 burger=next(p for p in state['products'] if p['name']=='Hamburguesa clásica con papas')
                 note='Sin cebolla, Cambiar a papas gajo (+$7)'
                 table=json.loads(call('/api/tables',{'name':'Mesa gajo'},True))['tables'][0]['id']

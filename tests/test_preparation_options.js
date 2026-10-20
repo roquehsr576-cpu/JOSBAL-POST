@@ -30,3 +30,23 @@ assert.ok(profile({category:'Hamburguesas con papas'}).options.includes('Cambiar
 assert.ok(!profile({category:'Hamburguesas'}).options.includes('Cambiar a papas gajo (+$7)'));
 assert.equal(vm.runInContext("unitPrice({category:'Hamburguesas con papas',price:10000},'Sin cebolla, Cambiar a papas gajo (+$7)')",context),10700);
 assert.equal(vm.runInContext("unitPrice({category:'Hamburguesas con papas',price:10000},'')",context),10000);
+for (const product of [
+  {category:'Bebidas calientes',name:'Americano · Chico'},
+  {category:'Bebidas calientes',name:'Capuchino · Grande'},
+  {category:'Bebidas sobre las rocas',name:'Latte sobre rocas · Grande'},
+  {category:'Frappés',name:'Frappé café'}
+]) {
+  context.product=product;
+  assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(coffeeLoadOptions(product))',context)),['Carga completa','Media carga']);
+}
+for (const product of [
+  {category:'Bebidas calientes',name:'Chocolate de leche · Chico'},
+  {category:'Bebidas calientes',name:'Matcha caliente · Grande'},
+  {category:'Hamburguesas',name:'Hamburguesa clásica'},
+  {category:'Bebidas calientes',name:'Americano · Chico',preparation_profile:'none'}
+]) {
+  context.product=product;
+  assert.equal(vm.runInContext('coffeeLoadOptions(product).length',context),0);
+}
+context.notes='Sin azúcar añadida, Media carga, leche tibia';
+assert.deepEqual(JSON.parse(vm.runInContext("JSON.stringify(splitPreparationNotes(notes,['Sin azúcar añadida',...COFFEE_LOAD_OPTIONS]))",context)),{selected:['Sin azúcar añadida','Media carga'],other:'leche tibia'});

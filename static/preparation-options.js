@@ -25,3 +25,15 @@ function splitPreparationNotes(notes, options) {
   const parts = notes.split(', ');
   return {selected: options.filter(option => parts.includes(option)), other: parts.filter(part => !options.includes(part)).join(', ')};
 }
+
+const COFFEE_LOAD_OPTIONS=['Carga completa','Media carga'];
+function coffeeLoadOptions(product) {
+  if (product.preparation_profile==='none') return [];
+  const name=(product.name||'').replace(/ · (Chico|Grande)$/,'');
+  const coffees={
+    'Bebidas calientes':['Espresso','Affogato','Americano','Capuchino','Latte','Moka','Moka blanco','Latte caramel'],
+    'Bebidas sobre las rocas':['Americano sobre rocas','Latte sobre rocas','Moka sobre rocas','Blanco sobre rocas','Caramelo sobre rocas'],
+    'Frappés':['Frappé café','Frappé moka','Frappé frapuchino Oreo']
+  };
+  return coffees[product.category]?.includes(name)?COFFEE_LOAD_OPTIONS:[];
+}
