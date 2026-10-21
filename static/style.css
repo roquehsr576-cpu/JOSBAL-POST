@@ -19,3 +19,5 @@
 .history-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.history-tools label{margin:0;min-width:180px}.history-tools button{min-height:44px}
 
 .size-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.size-options button{flex:1;padding:10px 8px;min-height:44px;font:inherit;font-size:13px}div.product{cursor:default}
+
+.cart-row{position:relative}.remove-line{margin-left:auto;min-width:44px;min-height:44px;font-size:23px;line-height:1;color:#aa3030;border:1px solid #edcccc;border-radius:8px;background:#fff5f5}.row-top .remove-line{flex-shrink:0}

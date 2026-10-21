@@ -52,7 +52,7 @@ with connect() as db:
     ''')
     # Additive migration preserves existing products, inventory and sales.
     columns = {r['name'] for r in db.execute('PRAGMA table_info(products)')}
-    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'"), ('production_station', "TEXT NOT NULL DEFAULT 'auto'")]:
+    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'"), ('production_station', "TEXT NOT NULL DEFAULT 'auto'"), ('prep_minutes', 'INTEGER NOT NULL DEFAULT 0')]:
         if name not in columns:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
     if 'retired' not in columns:
@@ -446,11 +446,15 @@ class Handler(BaseHTTPRequestHandler):
                     station = body.get('production_station', 'auto')
                     if station not in ('auto','kitchen','bar'):
                         raise ValueError('Selecciona Cocina o Barra como área de preparación.')
+                    existing_product = db.execute('SELECT prep_minutes FROM products WHERE id=?',(integer(body['id']),)).fetchone() if body.get('id') else None
+                    prep_minutes = integer(body.get('prep_minutes',existing_product['prep_minutes'] if existing_product else 0))
+                    if prep_minutes>1440:
+                        raise ValueError('El tiempo estimado debe estar entre 0 y 1440 minutos.')
                     if body.get('id'):
-                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=?,production_station=? WHERE id=?', (name,price,stock,category,description,managed,profile,station,integer(body['id']))).rowcount != 1:
+                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=?,production_station=?,prep_minutes=? WHERE id=?', (name,price,stock,category,description,managed,profile,station,prep_minutes,integer(body['id']))).rowcount != 1:
                             raise ValueError('Producto no encontrado.')
                     else:
-                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile,production_station) VALUES(?,?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile,station))
+                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile,production_station,prep_minutes) VALUES(?,?,?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile,station,prep_minutes))
                 elif self.path == '/api/open':
                     if shift:
                         raise ValueError('La caja ya está abierta.')

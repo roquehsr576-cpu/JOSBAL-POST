@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const source=fs.readFileSync('static/app.js','utf8');
+const context=vm.createContext({busy:false,cart:new Map([[1,{id:11,quantity:2}],[2,{id:12,quantity:1}]]),renders:0,dialog:{returnValue:'',showModal(){this.open=true;}}});
+vm.runInContext(`function render(){renders++}function removedLines(){return [{id:12}]}const $=()=>dialog;${source.slice(source.indexOf('async function reasonForRemovals()'),source.indexOf('function openPreparation'))}`,context);
+(async()=>{
+  vm.runInContext('removeCartLine(1)',context);
+  assert.equal(context.cart.size,1);
+  assert.equal(context.cart.get(2).id,12);
+  context.busy=true;
+  vm.runInContext('removeCartLine(2)',context);
+  assert.equal(context.cart.size,1);
+  const reason=await vm.runInContext('reasonForRemovals()',context);
+  assert.equal(reason.reason,'Otro');
+  assert.match(reason.reason_notes,/Modificación rápida/);
+  let confirmation=vm.runInContext('confirmOrderCancellation()',context);
+  context.dialog.onclose();
+  assert.equal(await confirmation,false);
+  confirmation=vm.runInContext('confirmOrderCancellation()',context);
+  context.dialog.returnValue='yes';context.dialog.onclose();
+  assert.equal(await confirmation,true);
+  console.log('X elimina solo la línea elegida; cambio rápido registrado; confirmación Sí/No: OK');
+})().catch(error=>{console.error(error);process.exitCode=1;});

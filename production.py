@@ -26,12 +26,16 @@ def send_tickets(db, lines, table_name, timestamp, order_id=None, sale_id=None):
     grouped={'kitchen':[],'bar':[]}
     for pid,qty,notes in lines:
         p=db.execute('SELECT * FROM products WHERE id=?',(pid,)).fetchone()
-        grouped[station_for(p)].append({'id':pid,'name':p['name'],'quantity':qty,'notes':notes})
+        grouped[station_for(p)].append({'id':pid,'name':p['name'],'quantity':qty,'notes':notes,'prep_minutes':p['prep_minutes']})
     for station,items in grouped.items():
         existing=db.execute('SELECT * FROM production_tickets WHERE order_id=? AND station=?',(order_id,station)).fetchone()
         # An untouched saved order is not resent when it is paid.
-        if existing and json.loads(existing['items'])==items:
-            continue
+        if existing:
+            previous=json.loads(existing['items'])
+            # Product time edits must not resend an unchanged kitchen/bar ticket at payment.
+            comparable=lambda lines:[{k:v for k,v in line.items() if k!='prep_minutes'} for line in lines]
+            if comparable(previous)==comparable(items):
+                continue
         if not items and not existing:
             continue
         # Keep the previous and current complete lists to make removals explicit.
