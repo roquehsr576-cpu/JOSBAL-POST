@@ -50,3 +50,9 @@ for (const product of [
 }
 context.notes='Sin azúcar añadida, Media carga, leche tibia';
 assert.deepEqual(JSON.parse(vm.runInContext("JSON.stringify(splitPreparationNotes(notes,['Sin azúcar añadida',...COFFEE_LOAD_OPTIONS]))",context)),{selected:['Sin azúcar añadida','Media carga'],other:'leche tibia'});
+
+assert.deepEqual(profile({category:'Bague-pizza',custom_options:'["Para llevar","Sin tomate","Sin cebolla"]'}).options,['Para llevar','Sin tomate','Sin cebolla']);
+assert.deepEqual(profile({category:'Hamburguesas',custom_options:['Sin tomate','sin cebolla']}).options,['Sin cebolla','Sin picante','Sin mostaza','Sin mayonesa','Sin cátsup','Sin tomate']);
+assert.deepEqual(profile({category:'Bague-pizza',custom_options:[]}).options,[]);
+context.notes='Para llevar, Sin tomate, salsa aparte';
+assert.deepEqual(JSON.parse(vm.runInContext("JSON.stringify(splitPreparationNotes(notes,['Para llevar','Sin tomate']))",context)),{selected:['Para llevar','Sin tomate'],other:'salsa aparte'});

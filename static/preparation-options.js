@@ -8,6 +8,7 @@ const PREPARATION_PROFILES = {
   cold_drink: {title: 'Personaliza tu bebida', options: ['Sin azúcar añadida', 'Sin hielo'], placeholder: 'Ejemplo: poco hielo, menos dulce…'},
   none: {title: 'Indicaciones de preparación', options: [], placeholder: 'Escribe aquí la indicación que pidió el cliente…'}
 };
+function customPreparationOptions(product){try{const value=typeof product.custom_options==='string'?JSON.parse(product.custom_options):product.custom_options;return Array.isArray(value)?value.filter(v=>typeof v==='string'):[];}catch{return [];}}
 function preparationProfile(product) {
   let key = product.preparation_profile || 'auto';
   if (key === 'auto') {
@@ -18,7 +19,9 @@ function preparationProfile(product) {
     }[product.category] || (product.category==='Combos'&&/^combo hot dog$/i.test(product.name||'')?'hotdog':'none');
   }
   const profile=PREPARATION_PROFILES[key] || PREPARATION_PROFILES.none;
-  return product.category==='Hamburguesas con papas'?{...profile,options:[...profile.options,GAJO_OPTION]}:profile;
+  const options=[...profile.options,...customPreparationOptions(product),...(product.category==='Hamburguesas con papas'?[GAJO_OPTION]:[])];
+  const seen=new Set();
+  return {...profile,options:options.filter(option=>{const key=option.toLocaleLowerCase('es');if(seen.has(key))return false;seen.add(key);return true;})};
 }
 // Recognize only exact options; preserve previous instructions as free text.
 function splitPreparationNotes(notes, options) {

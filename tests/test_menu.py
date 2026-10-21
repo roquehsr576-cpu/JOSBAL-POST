@@ -107,15 +107,21 @@ class MenuImport(unittest.TestCase):
                 with self.assertRaises(HTTPError) as error:
                     call('/api/sales',{'payment':'card','items':[{'id':p['id'],'quantity':1,'notes':note}]},True)
                 self.assertEqual(error.exception.code,400);error.exception.close()
-                created=json.loads(call('/api/products',{'name':'Hamburguesa manchego nueva','category':'Hamburguesas','description':'Carne de res, queso manchego y lechuga.','price':'95','stock':0,'inventory_managed':0,'show_in_menu':'1'},True))
+                created=json.loads(call('/api/products',{'name':'Hamburguesa manchego nueva','category':'Hamburguesas','description':'Carne de res, queso manchego y lechuga.','price':'95','stock':0,'inventory_managed':0,'show_in_menu':'1','custom_options':'Para llevar\nSin tomate\nSin cebolla'},True))
                 new=next(row for row in created['products'] if row['name']=='Hamburguesa manchego nueva')
                 self.assertIn(new['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
+                self.assertEqual(json.loads(new['custom_options']),['Para llevar','Sin tomate','Sin cebolla'])
+                custom_saved=json.loads(call('/api/orders',{'table_id':table,'items':[{'id':new['id'],'quantity':1,'notes':'Para llevar, Sin tomate'}]},True))
+                custom_tickets=json.loads(call('/api/production?pedido='+str(custom_saved['orders'][0]['production_order_id']),private=True))['tickets']
+                self.assertTrue(any(i['notes']=='Para llevar, Sin tomate' for t in custom_tickets for i in t['items']))
+
                 call('/api/products',{'id':new['id'],'name':new['name'],'category':new['category'],'description':'Carne de res y queso manchego.','price':'95','stock':0,'inventory_managed':0,'show_in_menu':'0'},True)
                 self.assertNotIn(new['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
                 call('/api/products',{'id':burger['id'],'name':burger['name'],'category':burger['category'],'description':burger['description'],'price':str(burger['price']/100),'stock':0,'inventory_managed':0,'show_in_menu':'0'},True)
                 proc.terminate();proc.wait(timeout=3);proc=start()
                 after=json.loads(call('/api/state',private=True))
                 self.assertEqual(sum(row['name']==burger['name'] for row in after['products']),1)
+                self.assertEqual(json.loads(next(row for row in after['products'] if row['id']==new['id'])['custom_options']),['Para llevar','Sin tomate','Sin cebolla'])
                 self.assertNotIn(burger['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
 
 
