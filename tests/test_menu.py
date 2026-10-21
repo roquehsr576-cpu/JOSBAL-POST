@@ -87,7 +87,9 @@ class MenuImport(unittest.TestCase):
                 coffee_tickets=json.loads(call('/api/production',private=True))['tickets']
                 self.assertTrue(any(i['notes']=='Media carga' for t in coffee_tickets for i in t['items']))
                 burger=next(p for p in state['products'] if p['name']=='Hamburguesa clásica con papas')
-                call('/api/products',{'id':burger['id'],'name':burger['name'],'price':str(burger['price']/100),'stock':0,'category':burger['category'],'description':burger['description'],'inventory_managed':0,'prep_minutes':10},True)
+                call('/api/products',{'id':burger['id'],'name':burger['name'],'price':str(burger['price']/100),'stock':0,'category':burger['category'],'description':burger['description']+' Con queso manchego.','inventory_managed':0,'prep_minutes':10},True)
+                updated_menu=json.loads(call('/api/menu'))['items']
+                self.assertIn('queso manchego',next(row for row in updated_menu if row['name']==burger['name'])['description'])
                 note='Sin cebolla, Cambiar a papas gajo (+$7)'
                 table=json.loads(call('/api/tables',{'name':'Mesa gajo'},True))['tables'][0]['id']
                 lines=[{'id':burger['id'],'quantity':2,'notes':note},{'id':burger['id'],'quantity':1,'notes':''}]
