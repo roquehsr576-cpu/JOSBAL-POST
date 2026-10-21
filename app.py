@@ -52,7 +52,7 @@ with connect() as db:
     ''')
     # Additive migration preserves existing products, inventory and sales.
     columns = {r['name'] for r in db.execute('PRAGMA table_info(products)')}
-    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'"), ('production_station', "TEXT NOT NULL DEFAULT 'auto'"), ('prep_minutes', 'INTEGER NOT NULL DEFAULT 0')]:
+    for name, definition in [('category', "TEXT NOT NULL DEFAULT ''"), ('description', "TEXT NOT NULL DEFAULT ''"), ('inventory_managed', 'INTEGER NOT NULL DEFAULT 1'), ('menu_key', 'TEXT'), ('preparation_profile', "TEXT NOT NULL DEFAULT 'auto'"), ('production_station', "TEXT NOT NULL DEFAULT 'auto'"), ('prep_minutes', 'INTEGER NOT NULL DEFAULT 0'), ('show_in_menu', 'INTEGER NOT NULL DEFAULT 1')]:
         if name not in columns:
             db.execute(f'ALTER TABLE products ADD COLUMN {name} {definition}')
     if 'retired' not in columns:
@@ -220,7 +220,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == '/api/menu':
             with connect() as db:
-                rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL AND retired=0 ORDER BY menu_key')
+                rows = db.execute('SELECT name,price,category,description FROM products WHERE menu_key IS NOT NULL AND retired=0 AND show_in_menu=1 ORDER BY menu_key')
                 self.reply(200, {'currency':'MXN', 'items':[dict(r) for r in rows]})
             return
         public = {'/menu': 'menu.html', '/menu/': 'menu.html', '/menu.js': 'menu.js', '/product-groups.js': 'product-groups.js', '/menu.css': 'menu.css', '/menu.pdf': 'menu.pdf', '/food-images.js': 'food-images.js', '/food-images.css': 'food-images.css', '/images/menu-photos.png': 'images/menu-photos.png'}
@@ -446,15 +446,24 @@ class Handler(BaseHTTPRequestHandler):
                     station = body.get('production_station', 'auto')
                     if station not in ('auto','kitchen','bar'):
                         raise ValueError('Selecciona Cocina o Barra como área de preparación.')
-                    existing_product = db.execute('SELECT prep_minutes FROM products WHERE id=?',(integer(body['id']),)).fetchone() if body.get('id') else None
+                    existing_product = db.execute('SELECT prep_minutes,menu_key,show_in_menu FROM products WHERE id=?',(integer(body['id']),)).fetchone() if body.get('id') else None
+                    menu_key = existing_product['menu_key'] if existing_product else None
+                    show_in_menu = existing_product['show_in_menu'] if existing_product else 1
+                    if 'show_in_menu' in body:
+                        visibility = str(body['show_in_menu'])
+                        if visibility not in ('0','1'):
+                            raise ValueError('Selecciona si el producto aparece en el menú.')
+                        show_in_menu = int(visibility)
+                        if visibility=='1' and not menu_key:
+                            menu_key = 'custom-'+uuid.uuid4().hex
                     prep_minutes = integer(body.get('prep_minutes',existing_product['prep_minutes'] if existing_product else 0))
                     if prep_minutes>1440:
                         raise ValueError('El tiempo estimado debe estar entre 0 y 1440 minutos.')
                     if body.get('id'):
-                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=?,production_station=?,prep_minutes=? WHERE id=?', (name,price,stock,category,description,managed,profile,station,prep_minutes,integer(body['id']))).rowcount != 1:
+                        if db.execute('UPDATE products SET name=?,price=?,stock=?,category=?,description=?,inventory_managed=?,preparation_profile=?,production_station=?,prep_minutes=?,menu_key=?,show_in_menu=? WHERE id=?', (name,price,stock,category,description,managed,profile,station,prep_minutes,menu_key,show_in_menu,integer(body['id']))).rowcount != 1:
                             raise ValueError('Producto no encontrado.')
                     else:
-                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile,production_station,prep_minutes) VALUES(?,?,?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile,station,prep_minutes))
+                        db.execute('INSERT INTO products(name,price,stock,category,description,inventory_managed,preparation_profile,production_station,prep_minutes,menu_key,show_in_menu) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(name,price,stock,category,description,managed,profile,station,prep_minutes,menu_key,show_in_menu))
                 elif self.path == '/api/open':
                     if shift:
                         raise ValueError('La caja ya está abierta.')

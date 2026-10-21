@@ -107,6 +107,17 @@ class MenuImport(unittest.TestCase):
                 with self.assertRaises(HTTPError) as error:
                     call('/api/sales',{'payment':'card','items':[{'id':p['id'],'quantity':1,'notes':note}]},True)
                 self.assertEqual(error.exception.code,400);error.exception.close()
+                created=json.loads(call('/api/products',{'name':'Hamburguesa manchego nueva','category':'Hamburguesas','description':'Carne de res, queso manchego y lechuga.','price':'95','stock':0,'inventory_managed':0,'show_in_menu':'1'},True))
+                new=next(row for row in created['products'] if row['name']=='Hamburguesa manchego nueva')
+                self.assertIn(new['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
+                call('/api/products',{'id':new['id'],'name':new['name'],'category':new['category'],'description':'Carne de res y queso manchego.','price':'95','stock':0,'inventory_managed':0,'show_in_menu':'0'},True)
+                self.assertNotIn(new['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
+                call('/api/products',{'id':burger['id'],'name':burger['name'],'category':burger['category'],'description':burger['description'],'price':str(burger['price']/100),'stock':0,'inventory_managed':0,'show_in_menu':'0'},True)
+                proc.terminate();proc.wait(timeout=3);proc=start()
+                after=json.loads(call('/api/state',private=True))
+                self.assertEqual(sum(row['name']==burger['name'] for row in after['products']),1)
+                self.assertNotIn(burger['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
+
 
                 self.assertEqual(state['products'][0]['inventory_managed'],0)
             finally:
