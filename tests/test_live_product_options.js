@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const source=fs.readFileSync('static/app.js','utf8');
+const nodes=new Map();
+function $(id){if(!nodes.has(id))nodes.set(id,{hidden:false,innerHTML:'',textContent:'',value:'',focus(){},showModal(){this.open=true;}});return nodes.get(id);}
+$('#preparation-form').reset=()=>{};
+$('#preparation-form').elements={other:{value:'',placeholder:''}};
+$('#product-form').elements={custom_options:{value:''}};
+const product={id:7,name:'Bague-pizza hawaiano',category:'Bague-pizza',inventory_managed:0,custom_options:'["Para llevar","Sin tomate"]'};
+const context=vm.createContext({$,busy:false,preparationLoading:false,preparation:null,state:{products:[{...product,custom_options:'[]'}]},cart:new Map(),canAdd:()=>true,render(){},message(){},esc:s=>s,api:async()=>({product})});
+vm.runInContext(fs.readFileSync('static/preparation-options.js','utf8'),context);
+vm.runInContext(source.slice(source.indexOf('async function openPreparation'),source.indexOf('let historySales')),context);
+vm.runInContext(source.slice(source.indexOf("$('#add-custom-option').onclick="),source.indexOf("$('#custom-option-name').onkeydown=")),context);
+(async()=>{
+  $('#custom-option-name').value='Para llevar';
+  $('#add-custom-option').onclick();
+  assert.equal($('#product-form').elements.custom_options.value,'Para llevar');
+  $('#custom-option-name').value='Sin tomate';
+  $('#add-custom-option').onclick();
+  assert.equal($('#product-form').elements.custom_options.value,'Para llevar\nSin tomate');
+  await vm.runInContext('openPreparation(7)',context);
+  assert.equal($('#preparation-options').hidden,false);
+  assert.ok($('#preparation-choices').innerHTML.includes('type="checkbox"'));
+  assert.ok($('#preparation-choices').innerHTML.includes('value="Para llevar"'));
+  assert.ok($('#preparation-choices').innerHTML.includes('value="Sin tomate"'));
+  assert.equal($('#preparation-dialog').open,true);
+  assert.equal(context.state.products[0].custom_options,product.custom_options);
+  console.log('Editar añade opciones y el pedido muestra las casillas actualizadas aunque su catálogo fuera anterior: OK');
+})().catch(error=>{console.error(error);process.exitCode=1;});

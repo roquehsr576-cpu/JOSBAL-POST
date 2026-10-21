@@ -317,6 +317,17 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 self.reply(400,{'error':'Comanda inválida.'})
             return
+        if urlsplit(self.path).path == '/api/product-options':
+            try:
+                pid=integer(parse_qs(urlsplit(self.path).query).get('id',[''])[0])
+                with connect() as db:
+                    product=db.execute('SELECT * FROM products WHERE id=? AND retired=0',(pid,)).fetchone()
+                    if not product:
+                        self.reply(404,{'error':'Producto no disponible.'});return
+                    self.reply(200,{'product':dict(product)})
+            except (ValueError,TypeError):
+                self.reply(400,{'error':'Producto inválido.'})
+            return
         if self.path == '/api/state':
             with connect() as db:
                 self.reply(200, self.state(db))

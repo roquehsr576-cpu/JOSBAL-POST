@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync('static/app.js','utf8');
 const context=vm.createContext({busy:false,cart:new Map([[1,{id:11,quantity:2}],[2,{id:12,quantity:1}]]),renders:0,dialog:{returnValue:'',showModal(){this.open=true;}}});
-vm.runInContext(`function render(){renders++}function removedLines(){return [{id:12}]}const $=()=>dialog;${source.slice(source.indexOf('async function reasonForRemovals()'),source.indexOf('function openPreparation'))}`,context);
+vm.runInContext(`function render(){renders++}function removedLines(){return [{id:12}]}const $=()=>dialog;${source.slice(source.indexOf('async function reasonForRemovals()'),source.indexOf('let preparationLoading='))}`,context);
 (async()=>{
   vm.runInContext('removeCartLine(1)',context);
   assert.equal(context.cart.size,1);

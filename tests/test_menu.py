@@ -111,6 +111,10 @@ class MenuImport(unittest.TestCase):
                 new=next(row for row in created['products'] if row['name']=='Hamburguesa manchego nueva')
                 self.assertIn(new['name'],[row['name'] for row in json.loads(call('/api/menu'))['items']])
                 self.assertEqual(json.loads(new['custom_options']),['Para llevar','Sin tomate','Sin cebolla'])
+                live_options=json.loads(call('/api/product-options?id='+str(new['id']),private=True))['product']
+                self.assertEqual(json.loads(live_options['custom_options']),['Para llevar','Sin tomate','Sin cebolla'])
+                with self.assertRaises(HTTPError) as error:call('/api/product-options?id='+str(new['id']))
+                self.assertEqual(error.exception.code,401);error.exception.close()
                 custom_saved=json.loads(call('/api/orders',{'table_id':table,'items':[{'id':new['id'],'quantity':1,'notes':'Para llevar, Sin tomate'}]},True))
                 custom_tickets=json.loads(call('/api/production?pedido='+str(custom_saved['orders'][0]['production_order_id']),private=True))['tickets']
                 self.assertTrue(any(i['notes']=='Para llevar, Sin tomate' for t in custom_tickets for i in t['items']))
