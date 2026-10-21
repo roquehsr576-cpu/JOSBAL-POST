@@ -21,3 +21,5 @@
 .size-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.size-options button{flex:1;padding:10px 8px;min-height:44px;font:inherit;font-size:13px}div.product{cursor:default}
 
 .cart-row{position:relative}.remove-line{margin-left:auto;min-width:44px;min-height:44px;font-size:23px;line-height:1;color:#aa3030;border:1px solid #edcccc;border-radius:8px;background:#fff5f5}.row-top .remove-line{flex-shrink:0}
+
+.cash-change{display:grid;gap:8px;padding:18px;margin:16px 0;background:#e2f5e9;color:#125a39;border:2px solid #65b58b;border-radius:12px}.cash-change>span{font-size:15px;font-weight:700}.cash-change>strong{font-size:34px;line-height:1.2}.cash-change>small{font-size:13px}.cash-change.insufficient{background:#fff3df;border-color:#d9a447;color:#7a4b08}.payment-summary p{display:flex;justify-content:space-between;gap:14px}.payment-summary p strong{white-space:nowrap}#payment-result{width:460px}#payment-result .actions button{width:100%;min-height:48px}
